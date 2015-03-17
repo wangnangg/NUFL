@@ -1,0 +1,241 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        "NUFL.Profiler"
+    </assembly>
+    <members>
+        <member name="M:CCodeCoverage.GetMethodSignatureToken_I4(System.UInt32)">
+            <summary>Get the token for a method having a single I4 parameter</summary>
+        </member>
+        <member name="M:CCodeCoverage.GetTokenAndModule(System.UInt32,System.UInt32*!System.Runtime.CompilerServices.IsImplicitlyDereferenced,System.UInt32*!System.Runtime.CompilerServices.IsImplicitlyDereferenced,std.basic_string&lt;System.Char,std.char_traits{System.Char},std.allocator&lt;System.Char&gt;&gt;*!System.Runtime.CompilerServices.IsImplicitlyDereferenced,System.UInt32*)">
+            <summary>
+Get the function token, module ID and module name for a supplied FunctionID
+</summary>
+        </member>
+        <member name="M:CCodeCoverage.GetAssemblyName(System.UInt32)">
+            <summary>
+Get the assembly name from an AssemblyID
+</summary>
+        </member>
+        <member name="M:CCodeCoverage.GetModulePath(System.UInt32)">
+            <summary>
+Gets the module name from a ModuleID
+</summary>
+        </member>
+        <member name="M:Operations.#ctor">
+            <summary>Build the static instance</summary>
+        </member>
+        <member name="M:Method.PopulateILMap(System.UInt32!System.Runtime.CompilerServices.IsLong,COR_IL_MAP*)">
+            <summary>Populate a supplied COR_IL_MAP block</summary>
+            <param name="mapSize">The size of the array.</param>
+            <param name="maps">The preallocated (CoTaskMemAlloc) array to populate.</param>
+            <remarks>Used with ULONG Method::GetILMapSize to allocate and populate an array of COR_IL_MAP
+which when used with SetILInstrumentedCodeMap can be used to inform any attached 
+debugger where the new debug points are.</remarks>
+        </member>
+        <member name="M:Method.GetILMapSize">
+            <summary>Get the size of the COR_IL_MAP block</summary>
+            <returns>The size (number of elements) of the array to allocate</returns>
+            <remarks>Used with PopulateILMap to allocate and populate an array of COR_IL_MAP
+which when used with SetILInstrumentedCodeMap can be used to inform any attached 
+debugger where the new debug points are.</remarks>
+        </member>
+        <member name="M:Method.DoesTryHandlerPointToOffset(System.Int32!System.Runtime.CompilerServices.IsLong)">
+            <summary>Test if we have an exception where the handler start points to the 
+instruction at the supplied offset</summary>
+            <param name="offset">The offset to look for.</param>
+            <returns>An <c>Instruction</c> that exists at that location.</returns>
+        </member>
+        <member name="M:Method.InsertInstructionsAtOriginalOffset(System.Int32!System.Runtime.CompilerServices.IsLong,std.vector&lt;Instruction**,std.allocator&lt;Instruction**&gt;&gt;!System.Runtime.CompilerServices.IsConst*!System.Runtime.CompilerServices.IsImplicitlyDereferenced)">
+            <summary>Insert a sequence of instructions at a sequence point</summary>
+            <param name="origOffset">The original (as in before any instrumentation) offset to look for.</param>
+            <param name="instructions">The list of instructions to insert at that location.</param>
+            <remarks>Original pointer references are maintained by inserting the sequence of instructions 
+after the intended target and then using a copy operator on the <c>Instruction</c> objects to 
+copy the data between them</remarks>
+        </member>
+        <member name="M:Method.InsertInstructionsAtOffset(System.Int32!System.Runtime.CompilerServices.IsLong,std.vector&lt;Instruction**,std.allocator&lt;Instruction**&gt;&gt;!System.Runtime.CompilerServices.IsConst*!System.Runtime.CompilerServices.IsImplicitlyDereferenced)">
+            <summary>Insert a sequence of instructions at a specific offset</summary>
+            <param name="offset">The offset to look for.</param>
+            <param name="instructions">The list of instructions to insert at that location.</param>
+            <remarks>Original pointer references are maintained by inserting the sequence of instructions 
+after the intended target and then using a copy operator on the <c>Instruction</c> objects to 
+copy the data between them</remarks>
+        </member>
+        <member name="M:Method.IsInstrumented(System.Int32!System.Runtime.CompilerServices.IsLong,std.vector&lt;Instruction**,std.allocator&lt;Instruction**&gt;&gt;!System.Runtime.CompilerServices.IsConst*!System.Runtime.CompilerServices.IsImplicitlyDereferenced)">
+            <summary>Test if a method has already been instrumented by comparing a list of instructions at that location</summary>
+            <param name="offset">The offset to look for.</param>
+            <param name="instructions">The list of instructions to compare with at that location.</param>
+        </member>
+        <member name="M:Method.GetMethodSize">
+            <summary>Calculates the size of the method which include the header size, 
+the code size and the (aligned) creitical sections if they exist. Use this
+to get the size required for allocating memory.</summary>
+            <returns>The size of the method.</returns>
+            <remarks>It is recomended that <c>RecalculateOffsets</c> should be called 
+beforehand if any instrumentation has been done</remarks>
+        </member>
+        <member name="M:Method.RecalculateOffsets">
+            <summary>Recalculate the offsets of each instruction taking into account the instruction
+size, the operand size and any extra datablocks CEE_SWITCH</summary>
+        </member>
+        <member name="M:Method.ConvertShortBranches">
+            <summary>Converts all short branches to long branches.</summary>
+            <remarks>
+                <para>After instrumentation most short branches will not have the capacity for
+the new required offset. Save time/effort and make all branches long ones.</para>
+                <para>Could add the capability to optimise long to short at a later date but consider 
+the benefits dubious after all the new instrumentation has been added.</para>
+            </remarks>
+        </member>
+        <member name="M:Method.DumpIL">
+            <summary>Pretty print the IL</summary>
+            <remarks>Only works for Debug builds.</remarks>
+        </member>
+        <member name="M:Method.ResolveBranches">
+            <summary>Uses the current offsets and locates the instructions that reside that offset to 
+build a new list</summary>
+            <remarks>This allows us to insert (or modify) instructions without losing the intended 'goto' 
+point. <c>RecalculateOffsets</c> is used to rebuild the new required operand(s) based on the
+offsets of the instructions being referenced</remarks>
+        </member>
+        <member name="M:Method.GetInstructionAtOffset(System.Int32!System.Runtime.CompilerServices.IsLong,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>Gets the <c>Instruction</c> that has (is at) the specified offset.</summary>
+            <param name="offset">The offset to look for.</param>
+            <returns>An <c>Instruction</c> that exists at that location.</returns>
+            <remarks>Ensure that the offsets are current by executing <c>RecalculateOffsets</c>
+beforehand. Only should be used when trying to find the instruction pointed to be a finally 
+block which may be beyond the bounds of the method itself</remarks>
+            <example>
+    void Method()
+    {
+           try
+           {
+               throw new Exception();
+           }
+           finally
+           {
+               Console.WriteLine("Finally");
+           }
+    }
+</example>
+        </member>
+        <member name="M:Method.GetInstructionAtOffset(System.Int32!System.Runtime.CompilerServices.IsLong)">
+            <summary>Gets the <c>Instruction</c> that has (is at) the specified offset.</summary>
+            <param name="offset">The offset to look for.</param>
+            <returns>An <c>Instruction</c> that exists at that location.</returns>
+            <remarks>Ensure that the offsets are current by executing <c>RecalculateOffsets</c>
+beforehand</remarks>
+        </member>
+        <member name="M:Method.ReadSections">
+            <summary>Read the section handler section.</summary>
+            <remarks>All 'Small' sections are to be converted to 'Fat' sections.</remarks>
+        </member>
+        <member name="M:Method.ReadBody">
+            <summary>Read in a method body and any section handlers.</summary>
+            <remarks>Also converts all short branches to long branches and calls <c>RecalculateOffsets</c></remarks>
+        </member>
+        <member name="M:Method.WriteSections">
+            <summary>Write out the FAT sections</summary>
+        </member>
+        <member name="M:Method.WriteMethod(IMAGE_COR_ILMETHOD*)">
+            <summary>Write the method to a supplied buffer</summary>
+            <remarks>
+                <para>The buffer must be of the size supplied by <c>GetMethodSize</c>.</para>
+                <para>Currently only write methods with 'Fat' headers and 'Fat' Sections - simpler.</para>
+                <para>The buffer will normally be allocated by a call to <c>IMethodMalloc::Alloc</c></para>
+            </remarks>
+        </member>
+        <member name="M:Method.ReadMethod(IMAGE_COR_ILMETHOD*)">
+            <summary>Read the full method from the supplied buffer.</summary>
+        </member>
+        <member name="M:CCodeCoverage.JITCompilationStarted(System.UInt32,System.Int32)">
+            <summary>Handle <c>ICorProfilerCallback::JITCompilationStarted</c></summary>
+            <remarks>The 'workhorse' </remarks>
+        </member>
+        <member name="M:CCodeCoverage.AddSafeCuckooBody(System.UInt32)">
+            <summary>This is the body of our method marked with the SecuritySafeCriticalAttribute</summary>
+            <remarks>Calls the method that is marked with the SecurityCriticalAttribute</remarks>
+        </member>
+        <member name="M:CCodeCoverage.AddCriticalCuckooBody(System.UInt32)">
+            <summary>This is the method marked with the SecurityCriticalAttribute</summary>
+            <remarks>This method makes the call into the profiler</remarks>
+        </member>
+        <member name="M:CCodeCoverage.ModuleAttachedToAssembly(System.UInt32,System.UInt32)">
+            <summary>Handle <c>ICorProfilerCallback::ModuleAttachedToAssembly</c></summary>
+            <remarks>Inform the host that we have a new module attached and that it may be 
+of interest</remarks>
+        </member>
+        <member name="M:InstrumentPointVisit(System.UInt32!System.Runtime.CompilerServices.IsLong)">
+            <summary>An unmanaged callback that can be called from .NET that has a single I4 parameter</summary>
+            <remarks>
+void (__fastcall *pt)(long) = &amp;SequencePointVisit ;
+mdSignature pmsig = GetUnmanagedMethodSignatureToken_I4(moduleId);
+</remarks>
+        </member>
+        <member name="M:CCodeCoverage.Shutdown">
+            <summary>Handle <c>ICorProfilerCallback::Shutdown</c></summary>
+        </member>
+        <member name="M:CCodeCoverage.Initialize(IUnknown*)">
+            <summary>Handle <c>ICorProfilerCallback::Initialize</c></summary>
+            <remarks>Initialize the profiling environment and establish connection to the host</remarks>
+        </member>
+        <member name="T:CCodeCoverage">
+            <summary>The main profiler COM object</summary>
+        </member>
+        <member name="T:Method">
+            <summary>The <c>Method</c> entity builds a 'model' of the IL that can then be modified</summary>
+        </member>
+        <member name="T:MethodBuffer">
+            <summary>The <c>MethodBuffer</c> encapsulates all the buffer handling</summary>
+        </member>
+        <member name="T:ExceptionHandler">
+            <summary>A representation of a try/catch section handler</summary>
+        </member>
+        <member name="T:Instruction">
+            <summary>A representation of an IL instruction.</summary>
+        </member>
+        <member name="T:Operations">
+            <summary>The container of the static lists used for the <c>OperationDetails</c> lookups</summary>
+            <remarks>The lists are built when we instantiate our static instance m_operations</remarks>
+        </member>
+        <member name="T:OperationDetails">
+            <summary>An operation structure see "opcode.def"</summary>
+        </member>
+        <member name="T:OperandSize">
+            <summary>A list of operand sizes</summary>
+            <remarks>Used, amongst other things, to build the <c>OperationDetails</c> structures 
+when pulling in "opcode.def"</remarks>
+        </member>
+        <member name="T:OpcodeKind">
+            <summary>A list of opcode types</summary>
+            <remarks>Used, amongst other things, to build the <c>OperationDetails</c> structures 
+when pulling in "opcode.def"</remarks>
+        </member>
+        <member name="T:OperandParam">
+            <summary>A list of operand types/usage </summary>
+            <remarks>Used, amongst other things, to build the <c>OperationDetails</c> structures 
+when pulling in "opcode.def"</remarks>
+        </member>
+        <member name="T:ControlFlow">
+            <summary>A list of control flow types</summary>
+            <remarks>Used, amongst other things, to build the <c>OperationDetails</c> structures 
+when pulling in "opcode.def"</remarks>
+        </member>
+        <member name="T:CanonicalName">
+            <summary>A list of opcodes</summary>
+            <remarks>Used, amongst other things, to build the <c>OperationDetails</c> structures 
+when pulling in "opcode.def"</remarks>
+        </member>
+        <member name="M:IPCStream.Initialize(System.UInt32)">
+            <summary>constructor for server side only for test purpose</summary>
+        </member>
+        <member name="M:IPCStream.Initialize(std.basic_string&lt;System.Char,std.char_traits{System.Char},std.allocator&lt;System.Char&gt;&gt;!System.Runtime.CompilerServices.IsConst*!System.Runtime.CompilerServices.IsImplicitlyDereferenced,System.UInt32)">
+            <summary>constructor for client side</summary>
+        </member>
+        <member name="T:ProfilerCommunication">
+            <summary>Handles communication back to the profiler host</summary>
+            <remarks>Currently this is handled by using the WebServices API</remarks>
+        </member>
+    </members>
+</doc>

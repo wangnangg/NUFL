@@ -1,0 +1,25 @@
+HKCR
+{
+	OpenCover.CodeCoverage.1 = s 'OpenCover CodeCoverage Class'
+	{
+		CLSID = s '{9E0614F2-BE35-4A96-A56D-25C59F3684E2}'
+	}
+	OpenCover.CodeCoverage = s 'OpenCover CodeCoverage Class'
+	{		
+		CurVer = s 'OpenCover.CodeCoverage.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {9E0614F2-BE35-4A96-A56D-25C59F3684E2} = s 'OpenCover CodeCoverage Class'
+		{
+			ProgID = s 'OpenCover.CodeCoverage.1'
+			VersionIndependentProgID = s 'OpenCover.CodeCoverage'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Both'
+			}
+			TypeLib = s '{437C5B7B-DA44-4DE8-8629-CC994EA549EC}'
+			Version = s '1.0'
+		}
+	}
+}

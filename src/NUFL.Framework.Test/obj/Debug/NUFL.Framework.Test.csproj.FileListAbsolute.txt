@@ -1,0 +1,2 @@
+E:\workplace\bin\Debug\NUFL.Framework.Test.dll
+E:\workplace\bin\Debug\NUFL.Framework.Test.pdb

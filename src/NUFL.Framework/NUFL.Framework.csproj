@@ -1,0 +1,116 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{6B01B019-0D29-415B-B9B2-C1BE22826C0B}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>NUFL.Framework</RootNamespace>
+    <AssemblyName>NUFL.Framework</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\..\bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="log4net">
+      <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil">
+      <HintPath>..\packages\Mono.Cecil.0.9.5.4\lib\net40\Mono.Cecil.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Mdb">
+      <HintPath>..\packages\Mono.Cecil.0.9.5.4\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Pdb">
+      <HintPath>..\packages\Mono.Cecil.0.9.5.4\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil.Rocks">
+      <HintPath>..\packages\Mono.Cecil.0.9.5.4\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CommandLineParser.cs" />
+    <Compile Include="CommandLineParserBase.cs" />
+    <Compile Include="Model\ModuleCache.cs" />
+    <Compile Include="Persistance\CBFL\CBFLPoint.cs" />
+    <Compile Include="Persistance\CBFL\FaultLocator.cs" />
+    <Compile Include="HelperExtensions.cs" />
+    <Compile Include="Persistance\IPersistance.cs" />
+    <Compile Include="Symbol\CecilSymbolManager.cs" />
+    <Compile Include="Symbol\ISymbolManager.cs" />
+    <Compile Include="Symbol\SymbolFolder.cs" />
+    <Compile Include="Model\BranchPoint.cs" />
+    <Compile Include="Model\Class.cs" />
+    <Compile Include="Model\CoverageSession.cs" />
+    <Compile Include="Model\File.cs" />
+    <Compile Include="Model\IInstrumentationModelBuilder.cs" />
+    <Compile Include="Model\IInstrumentationModelBuilderFactory.cs" />
+    <Compile Include="Model\InstrumentationModelBuilder.cs" />
+    <Compile Include="Model\InstrumentationModelBuilderFactory.cs" />
+    <Compile Include="Model\InstrumentationPoint.cs" />
+    <Compile Include="Model\Method.cs" />
+    <Compile Include="Model\Module.cs" />
+    <Compile Include="Model\SequencePoint.cs" />
+    <Compile Include="Model\SkippedEntity.cs" />
+    <Compile Include="Model\SkippedMethod.cs" />
+    <Compile Include="Model\Summary.cs" />
+    <Compile Include="Model\SummarySkippedEntity.cs" />
+    <Compile Include="Model\TrackedMethod.cs" />
+    <Compile Include="Option\IFilter.cs" />
+    <Compile Include="Option\IOption.cs" />
+    <Compile Include="ProfilerCommunication\IPCStream.cs" />
+    <Compile Include="ProfilerCommunication\Messages.cs" />
+    <Compile Include="ProfilerCommunication\ProfilerMessageDispatcher.cs" />
+    <Compile Include="ProfilerCommunication\ProfilerRegistration.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestRunner\ProfileTestRunner.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NUnit.Engine\nunit.engine.api\nunit.engine.api.csproj">
+      <Project>{775fad50-3623-4922-97c4-dfb29a8be4c7}</Project>
+      <Name>nunit.engine.api</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NUnit.Engine\nunit.engine\nunit.engine.csproj">
+      <Project>{372a3447-d657-40ff-a089-77c19fec30c8}</Project>
+      <Name>nunit.engine</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

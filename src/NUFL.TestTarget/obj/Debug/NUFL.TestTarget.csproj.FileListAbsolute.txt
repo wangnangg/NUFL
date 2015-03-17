@@ -1,0 +1,4 @@
+E:\workplace\NUFL\src\NUFL.TestTarget\bin\Debug\NUFL.TestTarget.dll
+E:\workplace\NUFL\src\NUFL.TestTarget\bin\Debug\NUFL.TestTarget.pdb
+E:\workplace\NUFL\bin\Debug\NUFL.TestTarget.dll
+E:\workplace\NUFL\bin\Debug\NUFL.TestTarget.pdb
