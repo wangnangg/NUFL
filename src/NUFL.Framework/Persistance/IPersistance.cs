@@ -12,6 +12,6 @@ namespace NUFL.Framework.Persistance
     {
         void PersistModule(Module module);
         void PersistTestResult(string xml_result);
-        void ConnectDataStream(IPCStream stream);
+        void SaveCoverageData(UInt32[] data, UInt32 length);
     }
 }

@@ -88,6 +88,7 @@
     <Compile Include="ProfilerCommunication\ProfilerMessageDispatcher.cs" />
     <Compile Include="ProfilerCommunication\ProfilerRegistration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Symbol\NUnitTestInvokerFinder.cs" />
     <Compile Include="TestRunner\ProfileTestRunner.cs" />
   </ItemGroup>
   <ItemGroup>

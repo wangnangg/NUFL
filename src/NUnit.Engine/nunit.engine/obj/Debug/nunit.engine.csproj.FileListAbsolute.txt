@@ -17,3 +17,8 @@ E:\workplace\opencover-master\main\bin\Debug\nunit.engine.dll
 E:\workplace\opencover-master\main\bin\Debug\nunit.engine.pdb
 E:\workplace\NUFL\src\bin\Debug\nunit.engine.dll
 E:\workplace\NUFL\src\bin\Debug\nunit.engine.pdb
+E:\workplace\NUFL\bin\Debug\nunit.engine.dll
+E:\workplace\NUFL\bin\Debug\nunit.engine.pdb
+E:\workplace\NUFL\src\NUnit.Engine\nunit.engine\obj\Debug\nunit.engine.csprojResolveAssemblyReference.cache
+E:\workplace\NUFL\src\NUnit.Engine\nunit.engine\obj\Debug\nunit.engine.dll
+E:\workplace\NUFL\src\NUnit.Engine\nunit.engine\obj\Debug\nunit.engine.pdb

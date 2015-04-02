@@ -22,3 +22,9 @@ E:\workplace\opencover-master\main\bin\Debug\nunit-agent.pdb
 E:\workplace\NUFL\src\bin\Debug\nunit-agent.exe.config
 E:\workplace\NUFL\src\bin\Debug\nunit-agent.exe
 E:\workplace\NUFL\src\bin\Debug\nunit-agent.pdb
+E:\workplace\NUFL\bin\Debug\nunit-agent.exe.config
+E:\workplace\NUFL\bin\Debug\nunit-agent.exe
+E:\workplace\NUFL\bin\Debug\nunit-agent.pdb
+E:\workplace\NUFL\src\NUnit.Engine\nunit-agent\obj\Debug\nunit-agent.csprojResolveAssemblyReference.cache
+E:\workplace\NUFL\src\NUnit.Engine\nunit-agent\obj\Debug\nunit-agent.exe
+E:\workplace\NUFL\src\NUnit.Engine\nunit-agent\obj\Debug\nunit-agent.pdb

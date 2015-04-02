@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NUFL.Framework", "NUFL.Framework\NUFL.Framework.csproj", "{6B01B019-0D29-415B-B9B2-C1BE22826C0B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B2CE418E-A5C8-4C46-9513-771414B3CA4C} = {B2CE418E-A5C8-4C46-9513-771414B3CA4C}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NUFL.Profiler", "NUFL.Profiler\NUFL.Profiler.vcxproj", "{B2CE418E-A5C8-4C46-9513-771414B3CA4C}"
 EndProject

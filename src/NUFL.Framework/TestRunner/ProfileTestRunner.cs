@@ -11,7 +11,8 @@ using NUFL.Framework.ProfilerCommunication;
 using NUnit.Engine;
 using NUnit.Engine.Internal;
 using NUFL.Framework.Model;
-
+using System.Threading;
+using NUFL.Framework.Symbol;
 namespace NUFL.Framework.TestRunner
 {
     public class ProfileTestRunner : MarshalByRefObject, IDisposable, ITestEventListener
@@ -23,6 +24,7 @@ namespace NUFL.Framework.TestRunner
         ProfilerMessageDispatcher _profiler_msg_dispatcher;
         IInstrumentationModelBuilderFactory _builder_factory;
         ModuleCache _module_cache;
+        Thread _data_process_thread;
 
         public ProfileTestRunner(IOption option, IFilter filter, ILog logger)
         {
@@ -41,7 +43,7 @@ namespace NUFL.Framework.TestRunner
             _profiler_msg_dispatcher.RegisterHandler(MSG_Type.MSG_TrackAssembly, TrackAssemblyHandler);
             _profiler_msg_dispatcher.RegisterHandler(MSG_Type.MSG_TrackMethod, TrackMethodHandler);
             _profiler_msg_dispatcher.RegisterHandler(MSG_Type.MSG_GetSequencePoints, GetSequencePointsHandler);
-            _profile_persistance.ConnectDataStream(_profiler_msg_dispatcher.DataStream);
+            //_profile_persistance.ConnectDataStream(_profiler_msg_dispatcher.DataStream);
             //ProfilerRegistration.Register(_option.Registration);
 
         }
@@ -49,10 +51,45 @@ namespace NUFL.Framework.TestRunner
         public void Run()
         {
             _profiler_msg_dispatcher.Start();
+            ThreadStart ts = new ThreadStart(ProcessCovData);
+            _data_process_thread = new Thread(ts);
+            _data_process_thread.Start();
             //run nunit with profiler
             RunNunitWithProfiler();
             _profiler_msg_dispatcher.Stop();
             
+        }
+
+        private void ProcessCovData()
+        {
+            IPCStream data_stream = _profiler_msg_dispatcher.DataStream;
+            UInt32 read_size = data_stream.BufferSize / 4 * 4;
+            byte[] data = new byte[read_size];
+            UInt32[] cov_data = new UInt32[read_size / 4];
+
+            UInt32 actual_read_size = data_stream.ReadOnce(data, 0, read_size);
+            while (actual_read_size > 0)
+            {
+                //process coverage data
+                UInt32 cov_data_size = actual_read_size / 4;
+
+                for (int i = 0, offset = 0; i < cov_data_size; i += 1, offset += 4)
+                {
+                    cov_data[i] = BitConverter.ToUInt32(data, offset); 
+                }
+
+                _profile_persistance.SaveCoverageData(cov_data, cov_data_size);
+
+                //deal with remainant
+                UInt32 remain_offset = cov_data_size * 4;
+                UInt32 remain_size = actual_read_size - remain_offset;
+                for (int i = 0; i < remain_size; i++ )
+                {
+                    data[i] = data[remain_offset + i];
+                }
+                actual_read_size = data_stream.ReadOnce(data, remain_size, read_size - remain_size);
+                
+            }
         }
 
         private void RunNunitWithProfiler()
@@ -84,6 +121,7 @@ namespace NUFL.Framework.TestRunner
                         dictionary["OpenCover_Msg_Buffer_Size"] = _profiler_msg_dispatcher.MsgStreamBufferSize.ToString();
                         dictionary["OpenCover_Data_Buffer_Guid"] = _profiler_msg_dispatcher.DataStream.UniqueGuid;
                         dictionary["OpenCover_Data_Buffer_Size"] = _profiler_msg_dispatcher.DataStream.BufferSize.ToString();
+                        dictionary["OpenCover_Profiler_TraceByTest"] = "1";
                     });
                 using (ITestEngineRunner remote_runner = agent.CreateRunner(package))
                 {
@@ -115,6 +153,14 @@ namespace NUFL.Framework.TestRunner
             {
                 response.track = false;
             }
+            //inspect test invokers
+            var tokens = NUnitTestInvokerFinder.GetInvokerTokens(ta_req.modulePath, ta_req.assemblyName);
+            response.testInvokerCount = tokens.Count;
+            response.invokerTokens = new int[MSG_TrackAssembly_Response.TOKENS_SIZE_CONST];
+            for (int i = 0; i < tokens.Count; i++ )
+            {
+                response.invokerTokens[i] = tokens[i];
+            }
             ProfilerMessageDispatcher.SendMessage<MSG_TrackAssembly_Response>(msg_stream, ref response);
         }
 
@@ -126,7 +172,7 @@ namespace NUFL.Framework.TestRunner
         {
             MSG_GetSequencePoints_Request gsp_req = (MSG_GetSequencePoints_Request)msg_obj;
             var method = _module_cache.RetrieveMethod(gsp_req.modulePath, gsp_req.functionToken);
-            InstrumentationPoint[] points = method.SequencePoints;
+            InstrumentationPoint[] points = method == null ? new SequencePoint[0]:method.SequencePoints;
             MSG_GetSequencePoints_Response gsp_resp = new MSG_GetSequencePoints_Response();
             gsp_resp.count = points.Length;
             ProfilerMessageDispatcher.SendMessageNoFlush<MSG_GetSequencePoints_Response>(msg_stream, ref gsp_resp);
@@ -139,7 +185,10 @@ namespace NUFL.Framework.TestRunner
                 msg_stream.Write(bytes, 0, (UInt32)bytes.Length);
             }
             msg_stream.Flush();
-            Debug.WriteLine("Sending points from " + method.Name);
+            if (method != null)
+            {
+                Debug.WriteLine("Sending points from " + method.Name);
+            }
         }
 
 
@@ -149,10 +198,18 @@ namespace NUFL.Framework.TestRunner
           //  ProfilerRegistration.Unregister(Registration.Path32);
         }
 
-
+        private void WaitForDataProcess()
+        {
+            int poll_time = 10;
+            while(_data_process_thread.ThreadState == System.Threading.ThreadState.Running)
+            {
+                Thread.Sleep(poll_time);
+            }
+        }
 
         public void OnTestEvent(string report)
         {
+            //flush all pending data first
             _profile_persistance.PersistTestResult(report);
         }
     }

@@ -1,5 +1,54 @@
-﻿Build started 2015/3/17 16:51:19.
+﻿Build started 2015/4/2 17:36:04.
+     1>Project "E:\workplace\NUFL\src\NUFL.Profiler\NUFL.Profiler.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D _USRDLL /D _WINDLL /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"Win32\Debug\NUFL.Profiler32.pch" /Fo"Win32\Debug\\" /Fd"Win32\Debug\vc120.pdb" /doc"Win32\Debug\\" /Gd /TP /analyze- /errorReport:prompt CodeCoverage.cpp CodeCoverage_Callback.cpp CodeCoverage_ProfilerInfo.cpp HostCommunication.cpp NativeCallback.cpp
+         CodeCoverage.cpp
+     1>e:\workplace\nufl\src\nufl.profiler\hostcommunication.h(101): warning C4800: 'BOOL' : forcing value to bool 'true' or 'false' (performance warning)
+         Generating Code...
+         Compiling...
+         CodeCoverage_Callback.cpp
+     1>e:\workplace\nufl\src\nufl.profiler\hostcommunication.h(101): warning C4800: 'BOOL' : forcing value to bool 'true' or 'false' (performance warning)
+         Generating Code...
+         Skipping... (no relevant changes detected)
+         NativeCallback.cpp
+         HostCommunication.cpp
+         CodeCoverage_ProfilerInfo.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D _USRDLL /D _WINDLL /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Win32\Debug\\" /Fd"Win32\Debug\vc120.pdb" /doc"Win32\Debug\\" /Gd /TP /analyze- /errorReport:prompt dllmain.cpp
+         Skipping... (no relevant changes detected)
+         dllmain.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D _USRDLL /D _WINDLL /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Win32\Debug\\" /Fd"Win32\Debug\vc120.pdb" /doc"Win32\Debug\\" /Gd /TC /analyze- /errorReport:prompt OpenCoverProfiler_i.c xdlldata.c
+         xdlldata.c
+     1>cl : Command line warning D9032: '-doc' : XML documentation comments are not supported by the C compiler
+         OpenCoverProfiler_i.c
+     1>cl : Command line warning D9032: '-doc' : XML documentation comments are not supported by the C compiler
+         Generating Code...
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"E:\workplace\NUFL\src\\..\bin\Debug\x86\NUFL.Profiler.dll" /INCREMENTAL /NOLOGO /DEF:".\OpenCover.Profiler.def" /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /manifestinput:"C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\Include\Manifest\dpiaware.manifest" /DEBUG /PDB:"E:\workplace\NUFL\src\\..\bin\Debug\x86\NUFL.Profiler.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /MACHINE:X86 /DLL Win32\Debug\OpenCover.Profiler.res
+         Win32\Debug\CodeCoverage.obj
+         Win32\Debug\CodeCoverage_Callback.obj
+         Win32\Debug\CodeCoverage_ProfilerInfo.obj
+         Win32\Debug\CoverageInstrumentation.obj
+         Win32\Debug\dllmain.obj
+         Win32\Debug\HostCommunication.obj
+         Win32\Debug\Instruction.obj
+         Win32\Debug\IPCStream.obj
+         Win32\Debug\Method.obj
+         Win32\Debug\NativeCallback.obj
+         Win32\Debug\OpenCover.Profiler.obj
+         Win32\Debug\OpenCoverProfiler_i.obj
+         Win32\Debug\ProfilerCommunication.obj
+         Win32\Debug\ExceptionHandler.obj
+         Win32\Debug\SharedMemory.obj
+         Win32\Debug\stdafx.obj
+         Win32\Debug\xdlldata.obj
+         Win32\Debug\Operations.obj
+         NUFL.Profiler.vcxproj -> E:\workplace\NUFL\src\\..\bin\Debug\x86\NUFL.Profiler.dll
+       XdcMake:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\xdcmake.exe /old "NUFL.Profiler" /nologo /Fo"E:\workplace\NUFL\src\Docs\NUFL.Profiler.xml" /FsWin32\Debug\CodeCoverage.xdc /FsWin32\Debug\CodeCoverage_Callback.xdc /FsWin32\Debug\CodeCoverage_ProfilerInfo.xdc /FsWin32\Debug\CoverageInstrumentation.xdc /FsWin32\Debug\dllmain.xdc /FsWin32\Debug\HostCommunication.xdc /FsWin32\Debug\Instruction.xdc /FsWin32\Debug\IPCStream.xdc /FsWin32\Debug\Method.xdc /FsWin32\Debug\NativeCallback.xdc /FsWin32\Debug\OpenCover.Profiler.xdc /FsWin32\Debug\OpenCoverProfiler_i.xdc /FsWin32\Debug\ProfilerCommunication.xdc /FsWin32\Debug\ExceptionHandler.xdc /FsWin32\Debug\SharedMemory.xdc /FsWin32\Debug\stdafx.xdc /FsWin32\Debug\xdlldata.xdc /FsWin32\Debug\Operations.xdc
+     1>Win32\Debug\xdlldata.xdc : warning XDC0006: file(s) not found
+     1>Win32\Debug\OpenCoverProfiler_i.xdc : warning XDC0006: file(s) not found
+     1>Done Building Project "E:\workplace\NUFL\src\NUFL.Profiler\NUFL.Profiler.vcxproj" (Build target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:00.01
+Time Elapsed 00:00:04.00

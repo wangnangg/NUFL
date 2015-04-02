@@ -14,11 +14,15 @@ namespace NUFL.Framework.ProfilerCommunication
         Thread _worker;
         Action<object, IPCStream>[] _handlers;
         AutoResetEvent _stopped_event;
+        EventWaitHandle _data_flush;
+        EventWaitHandle _data_flushed;
         public ProfilerMessageDispatcher()
         {
             _msg_stream = new IPCStream(16 * 1024);
             _data_stream = new IPCStream(256 * 1024);
             _stopped_event = new AutoResetEvent(false);
+            _data_flush = new EventWaitHandle(false, EventResetMode.AutoReset, "DataFlush#" + _data_stream.UniqueGuid);
+            _data_flushed = new EventWaitHandle(false, EventResetMode.AutoReset, "DataFlushed#" + _data_stream.UniqueGuid);
             //there will never be more than ten kinds of messages.
             _handlers = new Action<object, IPCStream>[10];
 
@@ -55,6 +59,7 @@ namespace NUFL.Framework.ProfilerCommunication
             _msg_stream.StopWaitingIncoming();
             _data_stream.StopWaitingIncoming();
             _worker.Join();
+            
         }
 
         public void RegisterHandler(MSG_Type msg_type, Action<object, IPCStream> handler)
@@ -65,6 +70,12 @@ namespace NUFL.Framework.ProfilerCommunication
         public void UnregisterHandler(MSG_Type msg_type, Action<object, IPCStream> handler)
         {
             _handlers[(int)msg_type] -= handler;
+        }
+
+        public void FlushDataStream()
+        {
+            _data_flush.Set();
+            _data_flushed.WaitOne();
         }
 
         private void WorkerThreadFunc()
@@ -86,6 +97,11 @@ namespace NUFL.Framework.ProfilerCommunication
                         remain_size = Marshal.SizeOf(typeof(MSG_GetSequencePoints_Request)) - 4;
                         _msg_stream.Read(msg_type_buffer, 4, (UInt32)remain_size);
                         msg = GetMsgFromBytes<MSG_GetSequencePoints_Request>(msg_type_buffer);
+                        break;
+                    case MSG_Type.MSG_TrackMethod:
+                        remain_size = Marshal.SizeOf(typeof(MSG_TrackMethod_Request)) - 4;
+                        _msg_stream.Read(msg_type_buffer, 4, (UInt32)remain_size);
+                        msg = GetMsgFromBytes<MSG_TrackMethod_Request>(msg_type_buffer);
                         break;
                     default:
                         Debug.WriteLine("Unexpected Message. Abort");
