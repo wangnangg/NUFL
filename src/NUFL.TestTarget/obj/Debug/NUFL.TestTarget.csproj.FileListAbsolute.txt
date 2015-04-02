@@ -2,3 +2,8 @@ E:\workplace\NUFL\src\NUFL.TestTarget\bin\Debug\NUFL.TestTarget.dll
 E:\workplace\NUFL\src\NUFL.TestTarget\bin\Debug\NUFL.TestTarget.pdb
 E:\workplace\NUFL\bin\Debug\NUFL.TestTarget.dll
 E:\workplace\NUFL\bin\Debug\NUFL.TestTarget.pdb
+E:\workplace\NUFL\bin\Debug\MockAssembly\NUFL.TestTarget.dll
+E:\workplace\NUFL\bin\Debug\MockAssembly\NUFL.TestTarget.pdb
+E:\workplace\NUFL\src\NUFL.TestTarget\obj\Debug\NUFL.TestTarget.csprojResolveAssemblyReference.cache
+E:\workplace\NUFL\src\NUFL.TestTarget\obj\Debug\NUFL.TestTarget.dll
+E:\workplace\NUFL\src\NUFL.TestTarget\obj\Debug\NUFL.TestTarget.pdb

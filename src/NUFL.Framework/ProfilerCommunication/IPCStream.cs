@@ -175,6 +175,43 @@ namespace NUFL.Framework.ProfilerCommunication
             return actual_read_bytes;
         }
 
+        public UInt32 ReadOnce(byte[] buffer, UInt32 offset, UInt32 length)
+        {
+            _waiting_stopped.Reset();
+            UInt32 actual_read_bytes = 0;
+            if (unread_bytes == 0)
+            {
+                int wait_result = WaitHandle.WaitAny(new WaitHandle[] { _remote_sent_event, _stop_waiting_for_incoming });
+                switch (wait_result)
+                {
+                    case 0:
+                        byte[] tmp = new byte[4];
+                        _read_stream.Read(tmp, 0, 4);
+                        unread_bytes = BitConverter.ToUInt32(tmp, 0);
+                        break;
+                    case 1:
+                        //we should return;
+                        _waiting_stopped.Set();
+                        return actual_read_bytes;
+                }
+            }
+
+            UInt32 read_bytes = Math.Min(unread_bytes, length);
+            _read_stream.Read(buffer, (int)offset, (int)read_bytes);
+            offset += read_bytes;
+            actual_read_bytes += read_bytes;
+            unread_bytes -= read_bytes;
+            if (unread_bytes == 0)
+            {
+                _read_stream.Seek(0, SeekOrigin.Begin);
+                _local_received_event.Set();
+            }
+            
+
+            _waiting_stopped.Set();
+            return actual_read_bytes;
+        }
+
         
 
         public void Flush()

@@ -10,6 +10,7 @@
 
 UINT_PTR CCodeCoverage::FunctionMapper2(FunctionID functionId, void* clientData, BOOL* pbHookFunction)
 {
+	ATLTRACE(_T("NUFLTrace: FunctionMapper2"));
     CCodeCoverage* profiler = static_cast<CCodeCoverage*>(clientData);
     *pbHookFunction = FALSE;
     if(profiler == NULL)
@@ -24,8 +25,7 @@ UINT_PTR CCodeCoverage::FunctionMapper2(FunctionID functionId, void* clientData,
     if (profiler->GetTokenAndModule(functionId, functionToken, moduleId, modulePath, &assemblyId))
     {
         ULONG uniqueId;
-        if (profiler->m_host.TrackMethod(functionToken, (LPWSTR)modulePath.c_str(), 
-            (LPWSTR)profiler->m_allowModulesAssemblyMap[modulePath].c_str(), uniqueId))
+        if (profiler->m_host.TrackMethod(functionToken, modulePath, uniqueId))
         {
             *pbHookFunction = TRUE;
             retVal = uniqueId;
@@ -37,6 +37,7 @@ UINT_PTR CCodeCoverage::FunctionMapper2(FunctionID functionId, void* clientData,
 
 UINT_PTR CCodeCoverage::FunctionMapper(FunctionID functionId, BOOL* pbHookFunction)
 {
+	ATLTRACE(_T("NUFLTrace: FunctionMapper"));
     return FunctionMapper2(functionId, g_pProfiler, pbHookFunction);
 }
 

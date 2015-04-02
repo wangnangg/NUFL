@@ -41,6 +41,10 @@ namespace NUFL.Framework.ProfilerCommunication
     {
         [MarshalAs(UnmanagedType.Bool)]
         public bool track;
+        public int testInvokerCount;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst=10)]
+        public int[] invokerTokens;
+        public static int TOKENS_SIZE_CONST = 10;
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 1, CharSet = CharSet.Unicode)]

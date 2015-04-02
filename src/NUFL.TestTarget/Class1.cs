@@ -22,5 +22,18 @@ namespace NUFL.TestTarget
                 a = a * 2;
             }
         }
+        [Test]
+        public void Method2()
+        {
+            int a = -1;
+            if (a > 0)
+            {
+                a = -a;
+            }
+            else
+            {
+                a = a * 2;
+            }
+        }
     }
 }

@@ -37,7 +37,7 @@ namespace NUFL.Framework.Model
                 }
             }
 
-            throw new Exception("Module " + module_path + " not exist.");
+            return null;
         }
 
         public Method RetrieveMethod(string module_path, int function_token)
@@ -53,8 +53,8 @@ namespace NUFL.Framework.Model
                     }
                 }
             }
-            
-            throw new Exception("Method in " + module_path + " not exist.");
+
+            return null;
         }
 
       

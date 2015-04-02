@@ -27,7 +27,7 @@ namespace NUFL.Framework.Test.TestRunner
            
             _commandline = new CommandLineParser(new string[]{
                  @"-target:E:\workplace\NUFL\bin\Debug\MockAssembly\NUFL.TestTarget.dll",
-                 @"-targetdir:E:\workplace\NUFL\bin\Debug",
+                 @"-targetdir:E:\workplace\NUFL\bin\Debug\MockAssembly",
                  "-targetargs:",
                  "-register:user",
                  "-filter:+[NUFL*]*"

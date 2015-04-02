@@ -8,6 +8,7 @@
 #define SEQ_BUFFER_SIZE 8000
 #define BRANCH_BUFFER_SIZE 4000
 #define VP_BUFFER_SIZE 16000
+#define INVOKER_METHOD_BUFFER_SIZE 10
 
 #pragma pack(push)
 #pragma pack(1)
@@ -63,6 +64,8 @@ typedef struct _MSG_TrackAssembly_Request
 typedef struct _MSG_TrackAssembly_Response
 {
     BOOL bResponse;
+	int iTestInvokerCount;
+	int invokerTokens[INVOKER_METHOD_BUFFER_SIZE]; 
 } MSG_TrackAssembly_Response;
 
 typedef struct _MSG_GetSequencePoints_Request

@@ -24,6 +24,7 @@ HRESULT STDMETHODCALLTYPE CCodeCoverage::Initialize(
     /* [in] */ IUnknown *pICorProfilerInfoUnk) 
 {
     ATLTRACE(_T("::Initialize"));
+	ATLTRACE(_T("NUFLTrace: Initialize"));
     
     OLECHAR szGuid[40]={0};
     int nCount = ::StringFromGUID2(CLSID_CodeCoverage, szGuid, 40);
@@ -161,6 +162,7 @@ HRESULT STDMETHODCALLTYPE CCodeCoverage::Initialize(
 /// <summary>Handle <c>ICorProfilerCallback::Shutdown</c></summary>
 HRESULT STDMETHODCALLTYPE CCodeCoverage::Shutdown( void) 
 {
+	ATLTRACE(_T("NUFLTrace: Shutdown"));
 	m_host.Finialize();
     WCHAR szExeName[MAX_PATH];
     GetModuleFileNameW(NULL, szExeName, MAX_PATH);
@@ -203,6 +205,7 @@ HRESULT STDMETHODCALLTYPE CCodeCoverage::ModuleLoadFinished(
         /* [in] */ ModuleID moduleId,
         /* [in] */ HRESULT hrStatus) 
 {
+	ATLTRACE(_T("NUFLTrace: ModuleLoadFinished"));
     CComPtr<IMetaDataEmit> metaDataEmit;
     COM_FAIL_MSG_RETURN_ERROR(m_profilerInfo->GetModuleMetaData(moduleId, 
         ofRead | ofWrite, IID_IMetaDataEmit, (IUnknown**)&metaDataEmit), 
@@ -316,6 +319,7 @@ HRESULT STDMETHODCALLTYPE CCodeCoverage::ModuleAttachedToAssembly(
     /* [in] */ ModuleID moduleId,
     /* [in] */ AssemblyID assemblyId)
 {
+	ATLTRACE(_T("NUFLTrace: ModuleAttachedToAssembly"));
     std::wstring modulePath = GetModulePath(moduleId);
     std::wstring assemblyName = GetAssemblyName(assemblyId);
     ATLTRACE(_T("::ModuleAttachedToAssembly(...) => (%X => %s, %X => %s)"), 
@@ -329,6 +333,7 @@ HRESULT STDMETHODCALLTYPE CCodeCoverage::ModuleAttachedToAssembly(
 
 mdMemberRef CCodeCoverage::RegisterSafeCuckooMethod(ModuleID moduleId)
 {
+	ATLTRACE(_T("NUFLTrace: RegisterSafeCuckooMethod"));
     ATLTRACE(_T("::RegisterSafeCuckooMethod(%X) => %s"), moduleId, CUCKOO_SAFE_METHOD_NAME);
 
     // for modules we are going to instrument add our reference to the method marked 
@@ -359,6 +364,7 @@ mdMemberRef CCodeCoverage::RegisterSafeCuckooMethod(ModuleID moduleId)
 /// <remarks>This method makes the call into the profiler</remarks>
 HRESULT CCodeCoverage::AddCriticalCuckooBody(ModuleID moduleId)
 {
+	ATLTRACE(_T("NUFLTrace: AddCriticalCuckooBody"));
     ATLTRACE(_T("::AddCriticalCuckooBody => Adding VisitedCritical..."));
 
     // our profiler hook
@@ -399,6 +405,7 @@ HRESULT CCodeCoverage::AddCriticalCuckooBody(ModuleID moduleId)
 /// <remarks>Calls the method that is marked with the SecurityCriticalAttribute</remarks>
 HRESULT CCodeCoverage::AddSafeCuckooBody(ModuleID moduleId)
 {
+	ATLTRACE(_T("NUFLTrace: AddSafeCuckooBody"));
     ATLTRACE(_T("::AddSafeCuckooBody => Adding SafeVisited..."));
 
     BYTE data[] = {(0x01 << 2) | CorILMethod_TinyFormat, CEE_RET};
@@ -432,6 +439,7 @@ HRESULT STDMETHODCALLTYPE CCodeCoverage::JITCompilationStarted(
         /* [in] */ FunctionID functionId,
         /* [in] */ BOOL fIsSafeToBlock)
 {
+	ATLTRACE(_T("NUFLTrace: JITCompilationStarted"));
     std::wstring modulePath;
     mdToken functionToken;
     ModuleID moduleId;
@@ -523,6 +531,7 @@ HRESULT STDMETHODCALLTYPE CCodeCoverage::JITCompilationStarted(
 
 void CCodeCoverage::InstrumentMethod(ModuleID moduleId, Method& method,  std::vector<SequencePoint> seqPoints, std::vector<BranchPoint> brPoints)
 {
+	ATLTRACE(_T("NUFLTrace: InstrumentMethod"));
     if (m_useOldStyle)
     {
 		ATLTRACE("Using old style");

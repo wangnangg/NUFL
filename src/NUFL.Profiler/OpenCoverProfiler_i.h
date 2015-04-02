@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 8.00.0603 */
-/* at Tue Mar 17 15:00:40 2015
+/* at Thu Apr 02 15:19:58 2015
  */
 /* Compiler settings for OpenCoverProfiler.idl:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.00.0603 

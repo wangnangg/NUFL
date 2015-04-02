@@ -1,2 +1,7 @@
 E:\workplace\bin\Debug\NUFL.Framework.Test.dll
 E:\workplace\bin\Debug\NUFL.Framework.Test.pdb
+E:\workplace\NUFL\bin\Debug\NUFL.Framework.Test.dll
+E:\workplace\NUFL\bin\Debug\NUFL.Framework.Test.pdb
+E:\workplace\NUFL\src\NUFL.Framework.Test\obj\Debug\NUFL.Framework.Test.csprojResolveAssemblyReference.cache
+E:\workplace\NUFL\src\NUFL.Framework.Test\obj\Debug\NUFL.Framework.Test.dll
+E:\workplace\NUFL\src\NUFL.Framework.Test\obj\Debug\NUFL.Framework.Test.pdb
