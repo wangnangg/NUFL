@@ -43,8 +43,6 @@ namespace NUFL.Framework.TestRunner
             _profiler_msg_dispatcher.RegisterHandler(MSG_Type.MSG_TrackAssembly, TrackAssemblyHandler);
             _profiler_msg_dispatcher.RegisterHandler(MSG_Type.MSG_TrackMethod, TrackMethodHandler);
             _profiler_msg_dispatcher.RegisterHandler(MSG_Type.MSG_GetSequencePoints, GetSequencePointsHandler);
-            //_profile_persistance.ConnectDataStream(_profiler_msg_dispatcher.DataStream);
-            //ProfilerRegistration.Register(_option.Registration);
 
         }
 
@@ -192,24 +190,22 @@ namespace NUFL.Framework.TestRunner
         }
 
 
+        bool disposed = false;
         public void Dispose()
         {
+            if(disposed)
+            {
+                return;
+            }
+            _data_process_thread.Join();
             _profiler_msg_dispatcher.Dispose();
-          //  ProfilerRegistration.Unregister(Registration.Path32);
+            _profile_persistance.Commit();
+            disposed = true;
         }
 
-        private void WaitForDataProcess()
-        {
-            int poll_time = 10;
-            while(_data_process_thread.ThreadState == System.Threading.ThreadState.Running)
-            {
-                Thread.Sleep(poll_time);
-            }
-        }
 
         public void OnTestEvent(string report)
         {
-            //flush all pending data first
             _profile_persistance.PersistTestResult(report);
         }
     }

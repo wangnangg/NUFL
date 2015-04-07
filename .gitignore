@@ -1,0 +1,8 @@
+*.pdb
+*.exe
+*.dll
+*.obj
+*.xdc
+src/NUFL.Profiler/Win32/Debug/*
+bin/
+*.cache

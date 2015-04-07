@@ -17,9 +17,11 @@ namespace NUFL.TestTarget
             if( a > 0)
             {
                 a = -a;
+                Assert.AreEqual(0, 1);
             } else
             {
                 a = a * 2;
+                Assert.AreEqual(0, 0);
             }
         }
         [Test]
@@ -29,10 +31,12 @@ namespace NUFL.TestTarget
             if (a > 0)
             {
                 a = -a;
+                Assert.AreEqual(0, 1);
             }
             else
             {
                 a = a * 2;
+                Assert.AreEqual(0, 0);
             }
         }
     }

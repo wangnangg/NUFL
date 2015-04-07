@@ -56,6 +56,7 @@ namespace NUFL.Framework.Test.TestRunner
         public void ProfileTestRunnerSmoke()
         {
             _test_runner.Run();
+            _test_runner.Dispose();
            
         }
 

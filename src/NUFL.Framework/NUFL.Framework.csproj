@@ -58,9 +58,11 @@
     <Compile Include="CommandLineParserBase.cs" />
     <Compile Include="Model\ModuleCache.cs" />
     <Compile Include="Persistance\CBFL\CBFLPoint.cs" />
+    <Compile Include="Persistance\CBFL\Coverage.cs" />
     <Compile Include="Persistance\CBFL\FaultLocator.cs" />
     <Compile Include="HelperExtensions.cs" />
     <Compile Include="Persistance\IPersistance.cs" />
+    <Compile Include="Persistance\TestCase.cs" />
     <Compile Include="Symbol\CecilSymbolManager.cs" />
     <Compile Include="Symbol\ISymbolManager.cs" />
     <Compile Include="Symbol\SymbolFolder.cs" />

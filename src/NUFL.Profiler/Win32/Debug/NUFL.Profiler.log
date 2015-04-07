@@ -1,21 +1,25 @@
-﻿Build started 2015/4/2 17:36:04.
+﻿Build started 2015/4/7 11:16:26.
      1>Project "E:\workplace\NUFL\src\NUFL.Profiler\NUFL.Profiler.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D _USRDLL /D _WINDLL /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"Win32\Debug\NUFL.Profiler32.pch" /Fo"Win32\Debug\\" /Fd"Win32\Debug\vc120.pdb" /doc"Win32\Debug\\" /Gd /TP /analyze- /errorReport:prompt CodeCoverage.cpp CodeCoverage_Callback.cpp CodeCoverage_ProfilerInfo.cpp HostCommunication.cpp NativeCallback.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D _USRDLL /D _WINDLL /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"Win32\Debug\NUFL.Profiler32.pch" /Fo"Win32\Debug\\" /Fd"Win32\Debug\vc120.pdb" /doc"Win32\Debug\\" /Gd /TP /analyze- /errorReport:prompt CodeCoverage.cpp CodeCoverage_Callback.cpp CodeCoverage_ProfilerInfo.cpp HostCommunication.cpp IPCStream.cpp NativeCallback.cpp
          CodeCoverage.cpp
      1>e:\workplace\nufl\src\nufl.profiler\hostcommunication.h(101): warning C4800: 'BOOL' : forcing value to bool 'true' or 'false' (performance warning)
          Generating Code...
          Compiling...
+         NativeCallback.cpp
+     1>e:\workplace\nufl\src\nufl.profiler\hostcommunication.h(101): warning C4800: 'BOOL' : forcing value to bool 'true' or 'false' (performance warning)
+         HostCommunication.cpp
+     1>e:\workplace\nufl\src\nufl.profiler\hostcommunication.h(101): warning C4800: 'BOOL' : forcing value to bool 'true' or 'false' (performance warning)
+         CodeCoverage_ProfilerInfo.cpp
+     1>e:\workplace\nufl\src\nufl.profiler\hostcommunication.h(101): warning C4800: 'BOOL' : forcing value to bool 'true' or 'false' (performance warning)
          CodeCoverage_Callback.cpp
      1>e:\workplace\nufl\src\nufl.profiler\hostcommunication.h(101): warning C4800: 'BOOL' : forcing value to bool 'true' or 'false' (performance warning)
          Generating Code...
          Skipping... (no relevant changes detected)
-         NativeCallback.cpp
-         HostCommunication.cpp
-         CodeCoverage_ProfilerInfo.cpp
+         IPCStream.cpp
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D _USRDLL /D _WINDLL /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Win32\Debug\\" /Fd"Win32\Debug\vc120.pdb" /doc"Win32\Debug\\" /Gd /TP /analyze- /errorReport:prompt dllmain.cpp
-         Skipping... (no relevant changes detected)
          dllmain.cpp
+     1>e:\workplace\nufl\src\nufl.profiler\hostcommunication.h(101): warning C4800: 'BOOL' : forcing value to bool 'true' or 'false' (performance warning)
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D _USRDLL /D _WINDLL /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Win32\Debug\\" /Fd"Win32\Debug\vc120.pdb" /doc"Win32\Debug\\" /Gd /TC /analyze- /errorReport:prompt OpenCoverProfiler_i.c xdlldata.c
          xdlldata.c
      1>cl : Command line warning D9032: '-doc' : XML documentation comments are not supported by the C compiler
@@ -51,4 +55,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:04.00
+Time Elapsed 00:00:08.66
