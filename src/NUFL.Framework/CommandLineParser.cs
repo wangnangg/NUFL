@@ -53,12 +53,10 @@ namespace NUFL.Framework
             FileExclusionFilters = new List<string>();
             TestFilters = new List<string>();
             LogLevel = Level.Info;
-            HideSkipped = new List<SkippedMethod>();
             EnablePerformanceCounters = false;
             TraceByTest = false;
             ServiceEnvironment = ServiceEnvironment.None;
             RegExFilters = false;
-            Registration = Registration.Normal;
         }
 
         /// <summary>
@@ -122,12 +120,6 @@ namespace NUFL.Framework
                 var lower = key.ToLowerInvariant();
                 switch(lower)
                 {
-                    case "register":
-                        Register = true;
-                        Registration registration;
-                        Enum.TryParse(GetArgumentValue("register"), true, out registration);
-                        Registration = registration;
-                        break;
                     case "target":
                         Target = GetArgumentValue("target");
                         break;
@@ -173,9 +165,6 @@ namespace NUFL.Framework
                     case "excludebyfile":
                         FileExclusionFilters = GetArgumentValue("excludebyfile")
                             .Split(';').ToList();
-                        break;
-                    case "hideskipped":
-                        HideSkipped = ExtractSkipped(GetArgumentValue("hideskipped"));
                         break;
                     case "coverbytest":
                         TestFilters = GetArgumentValue("coverbytest")
@@ -254,44 +243,12 @@ namespace NUFL.Framework
             return (from Match myMatch in myRegex.Matches(rawFilters) where myMatch.Success select myMatch.Value.Trim()).ToList();
         }
 
-        private static List<SkippedMethod> ExtractSkipped(string skipped)
-        {
-            if (string.IsNullOrWhiteSpace(skipped)) skipped = "All";
-            var options = skipped.Split(';');
-            var list = new List<SkippedMethod>();
-            foreach (var option in options)
-            {
-                switch (option.ToLowerInvariant())
-                {
-                    case "all":
-                        list.Add(SkippedMethod.Attribute);
-                        list.Add(SkippedMethod.File);
-                        list.Add(SkippedMethod.Filter);
-                        list.Add(SkippedMethod.MissingPdb);
-                        list.Add(SkippedMethod.AutoImplementedProperty);
-                        break;
-                    default:
-                        SkippedMethod result;
-                        if (!Enum.TryParse(option, true, out result))
-                        {
-                            throw new InvalidOperationException(string.Format("The hideskipped option {0} is not valid", option));
-                        }
-                        list.Add(result);
-                        break;
-                }
-            }
-            return list.Distinct().ToList();
-        }
 
         /// <summary>
         /// the switch -register was supplied
         /// </summary>
         public bool Register { get; private set; }
 
-        /// <summary>
-        /// the switch -register with the user argument was supplied i.e. -register:user
-        /// </summary>
-        public Registration Registration { get; private set; }
 
         /// <summary>
         /// whether auto-implemented properties sould be skipped 
@@ -373,10 +330,6 @@ namespace NUFL.Framework
         /// </summary>
         public List<string> TestFilters { get; private set; }
 
-        /// <summary>
-        /// A list of skipped entities to hide from being ouputted
-        /// </summary>
-        public List<SkippedMethod> HideSkipped { get; private set; }
 
         /// <summary>
         /// Set the threshold i.e. max visit count reporting

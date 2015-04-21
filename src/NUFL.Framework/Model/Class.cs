@@ -8,13 +8,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
+using NUFL.Framework.CBFL;
 
 namespace NUFL.Framework.Model
 {
     /// <summary>
     /// An entity that contains methods
     /// </summary>
-    public class Class : SummarySkippedEntity
+    public class Class:CBFLEntry
     {
         /// <summary>
         /// instantiate
@@ -28,18 +29,27 @@ namespace NUFL.Framework.Model
         /// The full name of the class
         /// </summary>
         public string FullName { get; set; }
+
+        public Position SourcePosition { get; set; }
         
-        [XmlIgnore]
-        internal File[] Files { get; set; }
 
         /// <summary>
         /// A list of methods that make up the class
         /// </summary>
         public Method[] Methods { get; set; }
 
-        public override void MarkAsSkipped(SkippedMethod reason)
+        public bool Skipped { get; set; }
+
+        public override IEnumerable<CBFLEntry> GetChildrenEnumerator()
         {
-            SkippedDueTo = reason;
+            foreach (var method in Methods)
+            {
+                foreach(var entry in method.GetChildrenEnumerator())
+                {
+                    yield return entry;
+                }
+            }
         }
+
     }
 }

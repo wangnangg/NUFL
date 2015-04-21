@@ -13,9 +13,10 @@ using NUnit.Engine.Internal;
 using NUFL.Framework.Model;
 using System.Threading;
 using NUFL.Framework.Symbol;
+using NUFL.Framework.TestModel;
 namespace NUFL.Framework.TestRunner
 {
-    public class ProfileTestRunner : MarshalByRefObject, IDisposable, ITestEventListener
+    public class ProfileTestRunner : MarshalByRefObject, ITestEventListener
     {
         IOption _option;
         IFilter _filter;
@@ -26,36 +27,123 @@ namespace NUFL.Framework.TestRunner
         ModuleCache _module_cache;
         Thread _data_process_thread;
 
-        public ProfileTestRunner(IOption option, IFilter filter, ILog logger)
+        ITestEngineRunner _runner;
+        ITestEngine _engine;
+        ITestAgent _agent;
+
+        public ProfileTestRunner(ILog logger)
         {
-            _option = option;
-            _filter = filter;
             _logger = logger;
         }
 
-        public void Initialize(IPersistance profile_persistance)
+        bool _loaded = false;
+        public void Load(IOption option, IFilter filter, IPersistance profile_persistance)
         {
+            if(_loaded)
+            {
+                return;
+            }
+            _filter = filter;
+            _option = option;
             _profile_persistance = profile_persistance;
-            _profiler_msg_dispatcher = new ProfilerMessageDispatcher();
             _builder_factory = new InstrumentationModelBuilderFactory(_option, _filter, _logger);
             _module_cache = new ModuleCache();
 
-            _profiler_msg_dispatcher.RegisterHandler(MSG_Type.MSG_TrackAssembly, TrackAssemblyHandler);
-            _profiler_msg_dispatcher.RegisterHandler(MSG_Type.MSG_TrackMethod, TrackMethodHandler);
-            _profiler_msg_dispatcher.RegisterHandler(MSG_Type.MSG_GetSequencePoints, GetSequencePointsHandler);
+            StartServer();
+            _runner = CreateRunner();
+            _loaded = true;
 
         }
 
-        public void Run()
+        private void StartServer()
         {
+            _profiler_msg_dispatcher = new ProfilerMessageDispatcher();
+            _profiler_msg_dispatcher.RegisterHandler(MSG_Type.MSG_TrackAssembly, TrackAssemblyHandler);
+            _profiler_msg_dispatcher.RegisterHandler(MSG_Type.MSG_GetSequencePoints, GetSequencePointsHandler);
             _profiler_msg_dispatcher.Start();
             ThreadStart ts = new ThreadStart(ProcessCovData);
             _data_process_thread = new Thread(ts);
             _data_process_thread.Start();
-            //run nunit with profiler
-            RunNunitWithProfiler();
+        }
+
+        private ITestEngineRunner CreateRunner()
+        {
+            _engine = new TestEngine();
+            TestPackage package = new TestPackage(_option.TestAssemblies);
+            package.Settings.Add("ShadowCopyFiles", true);
+            ServiceContext sc = (ServiceContext)_engine.Services;
+
+            _agent = sc.TestAgency.GetAgent(
+                sc.RuntimeFrameworkSelector.SelectRuntimeFramework(package),
+                30000,
+                false,   //debug?
+                "",
+                true, //x86?
+                (dictionary) =>
+                {
+                    dictionary[@"OpenCover_Profiler_Key"] = _profiler_msg_dispatcher.MsgStreamGuid;
+                    dictionary[@"OpenCover_Profiler_Namespace"] = "Local";
+                    dictionary[@"OpenCover_Profiler_Threshold"] = "1";
+                    dictionary["Cor_Profiler"] = "{9E0614F2-BE35-4A96-A56D-25C59F3684E2}";
+                    dictionary["Cor_Enable_Profiling"] = "1";
+                    dictionary["CoreClr_Profiler"] = "{9E0614F2-BE35-4A96-A56D-25C59F3684E2}";
+                    dictionary["CoreClr_Enable_Profiling"] = "1";
+                    dictionary["Cor_Profiler_Path"] = ProfilerRegistration.GetProfilerPath(false);
+                    dictionary["OpenCover_Msg_Buffer_Guid"] = _profiler_msg_dispatcher.MsgStreamGuid;
+                    dictionary["OpenCover_Msg_Buffer_Size"] = _profiler_msg_dispatcher.MsgStreamBufferSize.ToString();
+                    dictionary["OpenCover_Data_Buffer_Guid"] = _profiler_msg_dispatcher.DataStream.UniqueGuid;
+                    dictionary["OpenCover_Data_Buffer_Size"] = _profiler_msg_dispatcher.DataStream.BufferSize.ToString();
+                    dictionary["OpenCover_Profiler_TraceByTest"] = "1";
+                });
+            ITestEngineRunner remote_runner = _agent.CreateRunner(package);
+            remote_runner.Load();
+            return remote_runner;
+
+        }
+
+        public void UnLoad()
+        {
+            if(!_loaded)
+            {
+                return;
+            }
+            //stop nunit
+            _runner.Unload();
+            _runner.Dispose();
+            //_agent.Stop();
+            //(_engine.Services as ServiceContext).TestAgency.WaitAgent(_agent);
+            _engine.Dispose();
+
+            //stop sever
             _profiler_msg_dispatcher.Stop();
-            
+            _profiler_msg_dispatcher.UnregisterHandler(MSG_Type.MSG_TrackAssembly, TrackAssemblyHandler);
+            _profiler_msg_dispatcher.UnregisterHandler(MSG_Type.MSG_GetSequencePoints, GetSequencePointsHandler);
+            _data_process_thread.Join();
+            _profiler_msg_dispatcher.Dispose();
+            _loaded = false;
+        }
+
+        public TestContainer RunTests(TestFilter filter)
+        {
+            if(_loaded)
+            {
+                var container = TestContainer.ParseFromXml(_runner.Run(this, filter).Xml);
+                _profiler_msg_dispatcher.FlushDataStream();
+                _profile_persistance.Commit(container.RunnableTestCaseCount);
+                return container;
+            }else
+            {
+                throw new Exception("Load before Run."); 
+            }
+        }
+
+        public TestContainer DiscoverTests(TestFilter filter)
+        {
+            if(_loaded)
+            {
+                return TestContainer.ParseFromXml(_runner.Explore(filter).Xml);
+            }
+            throw new Exception("Load before discover.");
         }
 
         private void ProcessCovData()
@@ -138,11 +226,11 @@ namespace NUFL.Framework.TestRunner
         {
             MSG_TrackAssembly_Request ta_req = (MSG_TrackAssembly_Request)msg_obj;
             MSG_TrackAssembly_Response response;
-            Debug.WriteLine("track " + ta_req.assemblyName);
+            //Debug.WriteLine("track " + ta_req.assemblyName);
             var module_builder = _builder_factory.CreateModelBuilder(ta_req.modulePath, ta_req.assemblyName);
             if(_filter.UseAssembly(ta_req.assemblyName) && module_builder.CanInstrument)
             {
-                var module = module_builder.BuildModuleModel(true);
+                var module = module_builder.BuildModuleModel();
                 //to do: record this module for getsequencepoints
                 _module_cache.AddModule(module);
                 _profile_persistance.PersistModule(module);
@@ -162,46 +250,37 @@ namespace NUFL.Framework.TestRunner
             ProfilerMessageDispatcher.SendMessage<MSG_TrackAssembly_Response>(msg_stream, ref response);
         }
 
-        private void TrackMethodHandler(object msg_obj, IPCStream msg_stream)
-        {
-
-        }
         private void GetSequencePointsHandler(object msg_obj, IPCStream msg_stream)
         {
             MSG_GetSequencePoints_Request gsp_req = (MSG_GetSequencePoints_Request)msg_obj;
             var method = _module_cache.RetrieveMethod(gsp_req.modulePath, gsp_req.functionToken);
-            InstrumentationPoint[] points = method == null ? new SequencePoint[0]:method.SequencePoints;
-            MSG_GetSequencePoints_Response gsp_resp = new MSG_GetSequencePoints_Response();
-            gsp_resp.count = points.Length;
-            ProfilerMessageDispatcher.SendMessageNoFlush<MSG_GetSequencePoints_Response>(msg_stream, ref gsp_resp);
-            foreach (var point in points)
+            if (!method.Skipped)
             {
-                MSG_SequencePoint sp;
-                sp.offset = point.Offset;
-                sp.uniqueId = point.UniqueSequencePoint;
-                byte[] bytes = ProfilerMessageDispatcher.ToBytes<MSG_SequencePoint>(ref sp);
-                msg_stream.Write(bytes, 0, (UInt32)bytes.Length);
+                InstrumentationPoint[] points = method == null ? new InstrumentationPoint[0] : method.Points;
+                MSG_GetSequencePoints_Response gsp_resp = new MSG_GetSequencePoints_Response();
+                gsp_resp.count = points.Length;
+                ProfilerMessageDispatcher.SendMessageNoFlush<MSG_GetSequencePoints_Response>(msg_stream, ref gsp_resp);
+                foreach (var point in points)
+                {
+                    MSG_SequencePoint sp;
+                    sp.offset = point.Offset;
+                    sp.uniqueId = point.UniqueSequencePoint;
+                    byte[] bytes = ProfilerMessageDispatcher.ToBytes<MSG_SequencePoint>(ref sp);
+                    msg_stream.Write(bytes, 0, (UInt32)bytes.Length);
+                }
+                msg_stream.Flush();
+            } else
+            {
+                MSG_GetSequencePoints_Response gsp_resp = new MSG_GetSequencePoints_Response();
+                gsp_resp.count = 0;
+                ProfilerMessageDispatcher.SendMessage<MSG_GetSequencePoints_Response>(msg_stream, ref gsp_resp);
             }
-            msg_stream.Flush();
             if (method != null)
             {
-                Debug.WriteLine("Sending points from " + method.Name);
+                //Debug.WriteLine("Sending points from " + method.Name);
             }
         }
 
-
-        bool disposed = false;
-        public void Dispose()
-        {
-            if(disposed)
-            {
-                return;
-            }
-            _data_process_thread.Join();
-            _profiler_msg_dispatcher.Dispose();
-            _profile_persistance.Commit();
-            disposed = true;
-        }
 
 
         public void OnTestEvent(string report)

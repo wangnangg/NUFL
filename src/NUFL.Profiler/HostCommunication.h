@@ -149,24 +149,41 @@ public:
 		VisitPoint vp;
 		vp.UniqueId = uniqueId | IT_MethodEnter;
 		_data_stream.Write((char*)&vp, 0, sizeof(VisitPoint));
+		ClearHit();
+	}
+	inline void ClearHit()
+	{
+		for (int i = 0; i < hit_account.size(); i++)
+		{
+			hit_account[i] = false;
+		}
+	}
+	inline void FillHit()
+	{
+		for (int i = 0; i < hit_account.size(); i++)
+		{
+			hit_account[i] = true;
+		}
 	}
 	inline void AddTestLeavePoint(ULONG uniqueId) 
 	{
 		VisitPoint vp;
 		vp.UniqueId = uniqueId | IT_MethodLeave;
 		_data_stream.Write((char*)&vp, 0, sizeof(VisitPoint));
+		FillHit();
 	}
 	inline void AddTestTailcallPoint(ULONG uniqueId) 
 	{
 		VisitPoint vp;
 		vp.UniqueId = uniqueId | IT_MethodTailcall;
 		_data_stream.Write((char*)&vp, 0, sizeof(VisitPoint));
+		FillHit();
 	}
 	inline void AddVisitPointWithThreshold(ULONG uniqueId, ULONG threshold) 
 	{ 
 		if (hit_account[uniqueId])
 		{
-			//do nothing now
+			return;
 		}
 		hit_account[uniqueId] = true;
 		VisitPoint vp;

@@ -54,13 +54,15 @@ namespace NUnit.Engine.Services
     public class TestAgency : ServerBase, ITestAgency, IService
     {
         static Logger log = InternalTrace.GetLogger(typeof(TestAgency));
-
+        
         #region Private Fields
         private AgentDataBase agentData = new AgentDataBase();
         #endregion
 
         #region Constructors
-        public TestAgency() : this( "TestAgency", 0 ) { }
+        public TestAgency() : this(Guid.NewGuid().ToString(), 0 ) 
+        {
+        }
 
         public TestAgency( string uri, int port ) : base( uri, port ) { }
         #endregion

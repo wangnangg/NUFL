@@ -57,7 +57,48 @@ namespace NUFL.Framework.Model
             return null;
         }
 
+        public IEnumerable<Class> GetClassEnumerator()
+        {
+            foreach(var module in _modules)
+            {
+                foreach(var @class in module.Classes)
+                {
+                    if(@class.Skipped)
+                    {
+                        continue;
+                    }
+                    yield return @class;
+                }
+            }
+        }
+
+        public IEnumerable<Method> GetMethodEnumerator()
+        {
+            foreach(var module in _modules)
+            {
+                foreach(var @class in module.Classes)
+                {
+                    if(@class.Skipped)
+                    {
+                        continue;
+                    }
+                    foreach(var method in @class.Methods)
+                    {
+                        if(method.Skipped)
+                        {
+                            continue;
+                        }
+                        yield return method;
+                    }
+                }
+            }
+        }
+
       
+
+
+
+
 
 
 

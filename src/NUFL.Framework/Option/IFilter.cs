@@ -365,39 +365,37 @@ namespace NUFL.Framework.Setting
         /// </summary>
         /// <param name="parser"></param>
         /// <returns></returns>
-        public static IFilter BuildFilter(CommandLineParser parser)
+        public static IFilter BuildFilter(List<string> filters, bool RegExFilters)
         {
-            var filter = new Filter(parser.RegExFilters);
+            var filter = new Filter(RegExFilters);
 
             // apply filters
-            if (!parser.NoDefaultFilters)
+            if (RegExFilters)
             {
-                if (parser.RegExFilters)
-                {
-                    filter.AddFilter(@"-[(mscorlib)](.*)");
-                    filter.AddFilter(@"-[(mscorlib\..*)](.*)");
-                    filter.AddFilter(@"-[(System)](.*)");
-                    filter.AddFilter(@"-[(System\..*)](.*)");
-                    filter.AddFilter(@"-[(Microsoft.VisualBasic)](.*)");
-                }
-                else
-                {
-                    filter.AddFilter("-[mscorlib]*");
-                    filter.AddFilter("-[mscorlib.*]*");
-                    filter.AddFilter("-[System]*");
-                    filter.AddFilter("-[System.*]*");
-                    filter.AddFilter("-[Microsoft.VisualBasic]*");
-                }
+                filter.AddFilter(@"-[(mscorlib)](.*)");
+                filter.AddFilter(@"-[(mscorlib\..*)](.*)");
+                filter.AddFilter(@"-[(System)](.*)");
+                filter.AddFilter(@"-[(System\..*)](.*)");
+                filter.AddFilter(@"-[(Microsoft.VisualBasic)](.*)");
+            }
+            else
+            {
+                filter.AddFilter("-[mscorlib]*");
+                filter.AddFilter("-[mscorlib.*]*");
+                filter.AddFilter("-[System]*");
+                filter.AddFilter("-[System.*]*");
+                filter.AddFilter("-[Microsoft.VisualBasic]*");
             }
 
-            if (parser.Filters.Count > 0)
+
+            if (filters.Count > 0)
             {
-                parser.Filters.ForEach(filter.AddFilter);
+                filters.ForEach(filter.AddFilter);
             }
 
-            filter.AddAttributeExclusionFilters(parser.AttributeExclusionFilters.ToArray());
-            filter.AddFileExclusionFilters(parser.FileExclusionFilters.ToArray());
-            filter.AddTestFileFilters(parser.TestFilters.ToArray());
+           // filter.AddAttributeExclusionFilters(parser.AttributeExclusionFilters.ToArray());
+           // filter.AddFileExclusionFilters(parser.FileExclusionFilters.ToArray());
+           // filter.AddTestFileFilters(parser.TestFilters.ToArray());
 
             return filter;
         }

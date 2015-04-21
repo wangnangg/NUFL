@@ -14,8 +14,6 @@ using Mono.Cecil.Pdb;
 using NUFL.Framework.Model;
 using NUFL.Framework.Setting;
 using log4net;
-using File = NUFL.Framework.Model.File;
-using SequencePoint = NUFL.Framework.Model.SequencePoint;
 
 namespace NUFL.Framework.Symbol
 {
@@ -123,15 +121,6 @@ namespace NUFL.Framework.Symbol
             }
         }
 
-        public File[] GetFiles()
-        {
-            var list = new List<File>();
-            foreach (var instrumentableType in GetInstrumentableTypes())
-            {
-                list.AddRange(instrumentableType.Files);
-            }
-            return list.Distinct(new FileEqualityComparer()).Select(file => file).ToArray();
-        }
 
         public Class[] GetInstrumentableTypes()
         {
@@ -151,15 +140,17 @@ namespace NUFL.Framework.Symbol
                 var @class = new Class { FullName = typeDefinition.FullName };
                 if (!filter.InstrumentClass(moduleName, @class.FullName))
                 {
-                    @class.MarkAsSkipped(SkippedMethod.Filter);
+                    @class.Skipped = true;
                 }
                 else if (filter.ExcludeByAttribute(typeDefinition))
                 {
-                    @class.MarkAsSkipped(SkippedMethod.Attribute);
+                    @class.Skipped = true;
                 }
 
-                var list = new List<string>();
-                if (!@class.ShouldSerializeSkippedDueTo())
+                string filepath = null;
+                int start_line = 0;
+                int start_col = 0;
+                if (!@class.Skipped)
                 {
                     foreach (var methodDefinition in typeDefinition.Methods)
                     {
@@ -169,18 +160,26 @@ namespace NUFL.Framework.Symbol
                             {
                                 if (instruction.SequencePoint != null)
                                 {
-                                    list.Add(instruction.SequencePoint.Document.Url);
-                                    break;
+                                    filepath = instruction.SequencePoint.Document.Url;
+                                    start_line = instruction.SequencePoint.StartLine;
+                                    start_col = instruction.SequencePoint.StartColumn;
+                                    goto loop_out;
                                 }
                             }
                         }
                     }
                 }
+                loop_out:
+
+                
 
                 // only instrument types that are not structs and have instrumentable points
-                if (!typeDefinition.IsValueType || list.Count > 0)
+                if (!typeDefinition.IsValueType || filepath != null)
                 {
-                    @class.Files = list.Distinct().Select(file => new File { FullPath = file }).ToArray();
+                    @class.SourcePosition = new Position();
+                    @class.SourcePosition.FileId = Position.GetFileId(filepath);
+                    @class.SourcePosition.StartLine = start_line;
+                    @class.SourcePosition.StartColumn = start_col;
                     classes.Add(@class);
                 }
                 if (typeDefinition.HasNestedTypes)
@@ -189,11 +188,11 @@ namespace NUFL.Framework.Symbol
         }
 
 
-        public Method[] GetMethodsForType(Class type, File[] files)
+        public Method[] GetMethodsForType(Class type)
         {
             var methods = new List<Method>();
             IEnumerable<TypeDefinition> typeDefinitions = SourceAssembly.MainModule.Types;
-            GetMethodsForType(typeDefinitions, type.FullName, methods, files, _filter, _commandLine);
+            GetMethodsForType(typeDefinitions, type.FullName, methods,  _filter, _commandLine);
             return methods.ToArray();
         }
 
@@ -209,21 +208,21 @@ namespace NUFL.Framework.Symbol
             return null;
         }
 
-        private static void GetMethodsForType(IEnumerable<TypeDefinition> typeDefinitions, string fullName, List<Method> methods, File[] files, IFilter filter, IOption commandLine)
+        private static void GetMethodsForType(IEnumerable<TypeDefinition> typeDefinitions, string fullName, List<Method> methods, IFilter filter, IOption commandLine)
         {
             foreach (var typeDefinition in typeDefinitions)
             {
                 if (typeDefinition.FullName == fullName)
                 {
-                    BuildPropertyMethods(methods, files, filter, typeDefinition, commandLine);
-                    BuildMethods(methods, files, filter, typeDefinition, commandLine);
+                    BuildPropertyMethods(methods, filter, typeDefinition, commandLine);
+                    BuildMethods(methods, filter, typeDefinition, commandLine);
                 }
                 if (typeDefinition.HasNestedTypes)
-                    GetMethodsForType(typeDefinition.NestedTypes, fullName, methods, files, filter, commandLine);
+                    GetMethodsForType(typeDefinition.NestedTypes, fullName, methods, filter, commandLine);
             }
         }
 
-        private static void BuildMethods(ICollection<Method> methods, File[] files, IFilter filter, TypeDefinition typeDefinition, IOption commandLine)
+        private static void BuildMethods(ICollection<Method> methods, IFilter filter, TypeDefinition typeDefinition, IOption commandLine)
         {
             foreach (var methodDefinition in typeDefinition.Methods)
             {
@@ -231,12 +230,12 @@ namespace NUFL.Framework.Symbol
                 if (methodDefinition.IsGetter) continue;
                 if (methodDefinition.IsSetter) continue;
 
-                var method = BuildMethod(files, filter, methodDefinition, false, commandLine);
+                var method = BuildMethod(filter, methodDefinition, false, commandLine);
                 methods.Add(method);
             }
         }
 
-        private static void BuildPropertyMethods(ICollection<Method> methods, File[] files, IFilter filter, TypeDefinition typeDefinition, IOption commandLine)
+        private static void BuildPropertyMethods(ICollection<Method> methods, IFilter filter, TypeDefinition typeDefinition, IOption commandLine)
         {
             foreach (var propertyDefinition in typeDefinition.Properties)
             {
@@ -244,19 +243,19 @@ namespace NUFL.Framework.Symbol
 
                 if (propertyDefinition.GetMethod != null && !propertyDefinition.GetMethod.IsAbstract)
                 {
-                    var method = BuildMethod(files, filter, propertyDefinition.GetMethod, skipped, commandLine);
+                    var method = BuildMethod(filter, propertyDefinition.GetMethod, skipped, commandLine);
                     methods.Add(method);
                 }
 
                 if (propertyDefinition.SetMethod != null && !propertyDefinition.SetMethod.IsAbstract)
                 {
-                    var method = BuildMethod(files, filter, propertyDefinition.SetMethod, skipped, commandLine);
+                    var method = BuildMethod(filter, propertyDefinition.SetMethod, skipped, commandLine);
                     methods.Add(method);
                 }
             }
         }
 
-        private static Method BuildMethod(IEnumerable<File> files, IFilter filter, MethodDefinition methodDefinition, bool alreadySkippedDueToAttr, IOption commandLine)
+        private static Method BuildMethod(IFilter filter, MethodDefinition methodDefinition, bool alreadySkippedDueToAttr, IOption commandLine)
         {
             var method = new Method
             {
@@ -268,34 +267,43 @@ namespace NUFL.Framework.Symbol
                 MetadataToken = methodDefinition.MetadataToken.ToInt32()
             };
 
-            if (alreadySkippedDueToAttr || filter.ExcludeByAttribute(methodDefinition))
-                method.MarkAsSkipped(SkippedMethod.Attribute);
-            else if (filter.ExcludeByFile(GetFirstFile(methodDefinition)))
-                method.MarkAsSkipped(SkippedMethod.File);
-            else if (commandLine.SkipAutoImplementedProperties && filter.IsAutoImplementedProperty(methodDefinition))
-                method.MarkAsSkipped(SkippedMethod.AutoImplementedProperty);
 
-            var definition = methodDefinition;
-            method.FileRef = files.Where(x => x.FullPath == GetFirstFile(definition))
-                .Select(x => new FileRef { UniqueId = x.UniqueId }).FirstOrDefault();
+            if (alreadySkippedDueToAttr || filter.ExcludeByAttribute(methodDefinition))
+                method.Skipped = true;
+            else if (filter.ExcludeByFile(GetFirstFile(methodDefinition)))
+                method.Skipped = true;
+            else if (commandLine.SkipAutoImplementedProperties && filter.IsAutoImplementedProperty(methodDefinition))
+                method.Skipped = true;
+
+            method.SourcePosition = new Position();
+            if (methodDefinition.Body != null && methodDefinition.Body.Instructions != null)
+            {
+                foreach (var instruction in methodDefinition.Body.Instructions)
+                {
+                    if (instruction.SequencePoint != null)
+                    {
+                        method.SourcePosition.FileId = 
+                            Position.GetFileId(instruction.SequencePoint.Document.Url);
+                        method.SourcePosition.StartLine = instruction.SequencePoint.StartLine;
+                        method.SourcePosition.StartColumn = instruction.SequencePoint.StartColumn;
+                        return method;
+                    }
+                }
+            }
+
+            method.Skipped = true;
+
             return method;
         }
 
-        public SequencePoint[] GetSequencePointsForToken(int token)
+        public InstrumentationPoint[] GetSequencePointsForToken(int token)
         {
             BuildMethodMap();
-            var list = new List<SequencePoint>();
+            var list = new List<InstrumentationPoint>();
             GetSequencePointsForToken(token, list);
             return list.ToArray();
         }
 
-        public BranchPoint[] GetBranchPointsForToken(int token)
-        {
-            BuildMethodMap();
-            var list = new List<BranchPoint>();
-            GetBranchPointsForToken(token, list);
-            return list.ToArray();
-        }
 
         public int GetCyclomaticComplexityForToken(int token)
         {
@@ -328,7 +336,7 @@ namespace NUFL.Framework.Symbol
             }
         }
 
-        private void GetSequencePointsForToken(int token, List<SequencePoint> list)
+        private void GetSequencePointsForToken(int token, List<InstrumentationPoint> list)
         {
             var methodDefinition = GetMethodDefinition(token);
             if (methodDefinition == null) return;
@@ -336,118 +344,12 @@ namespace NUFL.Framework.Symbol
             list.AddRange(from instruction in methodDefinition.Body.Instructions
                           where instruction.SequencePoint != null && instruction.SequencePoint.StartLine != StepOverLineCode
                           let sp = instruction.SequencePoint
-                          select new SequencePoint
+                          select new InstrumentationPoint 
                           {
-                              EndColumn = sp.EndColumn,
-                              EndLine = sp.EndLine,
                               Offset = instruction.Offset,
                               Ordinal = ordinal++,
-                              StartColumn = sp.StartColumn,
-                              StartLine = sp.StartLine,
-                              Document = sp.Document.Url,
+                              SourcePosition = new Position(sp.Document.Url, sp.StartLine, sp.StartColumn)
                           });
-        }
-
-        private void GetBranchPointsForToken(int token, List<BranchPoint> list)
-        {
-            var methodDefinition = GetMethodDefinition(token);
-            if (methodDefinition == null) return;
-            UInt32 ordinal = 0;
-
-            foreach (var instruction in methodDefinition.Body.Instructions)
-            {
-                if (instruction.OpCode.FlowControl != FlowControl.Cond_Branch)
-                    continue;
-
-                if (BranchIsInGeneratedFinallyBlock(instruction, methodDefinition)) continue;
-
-                var pathCounter = 0;
-
-                // store branch origin offset
-                var branchOffset = instruction.Offset;
-                var branchingInstructionLine =
-                    FindClosestSequencePoints(methodDefinition.Body, instruction)
-                        .Maybe(sp => sp.SequencePoint.StartLine, -1);
-
-                if (null == instruction.Next)
-                    return;
-
-                // Add Default branch (Path=0)
-
-                // Follow else/default instruction
-                var @else = instruction.Next;
-
-                var pathOffsetList = GetBranchPath(@else);
-
-                // add Path 0
-                var path0 = new BranchPoint
-                {
-                    StartLine = branchingInstructionLine,
-                    Offset = branchOffset,
-                    Ordinal = ordinal++,
-                    Path = pathCounter++,
-                    OffsetPoints =
-                        pathOffsetList.Count > 1
-                            ? pathOffsetList.GetRange(0, pathOffsetList.Count - 1)
-                            : new List<int>(),
-                    EndOffset = pathOffsetList.Last()
-                };
-                list.Add(path0);
-
-                // Add Conditional Branch (Path=1)
-                if (instruction.OpCode.Code != Code.Switch)
-                {
-                    // Follow instruction at operand
-                    var @then = instruction.Operand as Instruction;
-                    if (@then == null)
-                        return;
-
-                    pathOffsetList = GetBranchPath(@then);
-
-                    // Add path 1
-                    var path1 = new BranchPoint
-                    {
-                        StartLine = branchingInstructionLine,
-                        Offset = branchOffset,
-                        Ordinal = ordinal++,
-                        Path = pathCounter,
-                        OffsetPoints =
-                            pathOffsetList.Count > 1
-                                ? pathOffsetList.GetRange(0, pathOffsetList.Count - 1)
-                                : new List<int>(),
-                        EndOffset = pathOffsetList.Last()
-                    };
-                    list.Add(path1);
-                }
-                else // instruction.OpCode.Code == Code.Switch
-                {
-                    var branchInstructions = instruction.Operand as Instruction[];
-                    if (branchInstructions == null || branchInstructions.Length == 0)
-                        return;
-
-                    // Add Conditional Branches (Path>0)
-                    foreach (var @case in branchInstructions)
-                    {
-                        // Follow operand istruction
-                        pathOffsetList = GetBranchPath(@case);
-
-                        // add paths 1..n
-                        var path1ToN = new BranchPoint
-                        {
-                            StartLine = branchingInstructionLine,
-                            Offset = branchOffset,
-                            Ordinal = ordinal++,
-                            Path = pathCounter++,
-                            OffsetPoints =
-                                pathOffsetList.Count > 1
-                                    ? pathOffsetList.GetRange(0, pathOffsetList.Count - 1)
-                                    : new List<int>(),
-                            EndOffset = pathOffsetList.Last()
-                        };
-                        list.Add(path1ToN);
-                    }
-                }
-            }
         }
 
         private static bool BranchIsInGeneratedFinallyBlock(Instruction branchInstruction, MethodDefinition methodDefinition)

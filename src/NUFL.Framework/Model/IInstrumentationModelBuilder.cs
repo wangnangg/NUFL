@@ -15,7 +15,7 @@ namespace NUFL.Framework.Model
         /// </summary>
         /// <param name="full">include class, methods etc</param>
         /// <returns></returns>
-        Module BuildModuleModel(bool full);
+        Module BuildModuleModel();
         
         /// <summary>
         /// check if module can be instrumented

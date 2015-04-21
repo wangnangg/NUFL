@@ -19,33 +19,19 @@ namespace NUFL.Framework.Test.ProfilerCommunication
     [TestFixture]
     class ProfilerMessageDispatcherTests
     {
-        CommandLineParser _commandline;
+        NUFLOption _option;
         IFilter _filter;
         ILog _logger;
         [SetUp]
         public void Setup()
         {
 
-            _commandline = new CommandLineParser(new string[]{
-                 @"-target:E:\workplace\NUFL\bin\Debug\MockAssembly\NUFL.TestTarget.dll",
-                 @"-targetdir:E:\workplace\NUFL\bin\Debug",
-                 "-targetargs:",
-                 "-register:user",
-                 "-filter:+[NUFL*]*"
-             });
+            _option = new NUFLOption();
+            _option.TestAssemblies.Add(@".\MockAssembly\NUFL.TestTarget.dll");
+            _option.TargetDir = @".\MockAssembly";
+            _option.ProfileFilters.Add("+[NUFL*]*");
 
-            /*
-            _commandline = new CommandLineParser(new string[]{
-                 "-target:E:\\workplace\\nunit_test\\nunit_test\\bin\\Debug\\nunit_test.exe",
-                 "-targetargs:",
-                 "-targetdir:E:\\workplace\\nunit_test\\nunit_test\\bin\\Debug\\",
-                 "-register:user",
-                 //"-coverbytest:",
-                 "-filter:+[nunit_test]*"
-             });
-             */
-            _commandline.ExtractAndValidateArguments();
-            _filter = Filter.BuildFilter(_commandline);
+            _filter = Filter.BuildFilter(_option.ProfileFilters, false);
             _logger = LogManager.GetLogger("test");
         }
         [Test]
@@ -134,8 +120,8 @@ namespace NUFL.Framework.Test.ProfilerCommunication
             Process p = new Process();
             p.StartInfo = startinfo;
             p.Start();
-          //  EventWaitHandle debugging_event = new EventWaitHandle(false, EventResetMode.AutoReset, "wangnan_debugging_event");
-           // debugging_event.Set();
+            //  EventWaitHandle debugging_event = new EventWaitHandle(false, EventResetMode.AutoReset, "wangnan_debugging_event");
+            // debugging_event.Set();
             p.WaitForExit();
 
         }
@@ -175,9 +161,9 @@ namespace NUFL.Framework.Test.ProfilerCommunication
             var result = remote_runner.Run(eventHandler, filter).Aggregate("test-run", package.Name, package.FullName).Xml; ;
             remote_runner.Unload();
             remote_runner.Dispose();
-           // agent.Stop();
+            // agent.Stop();
             sc.TestAgency.WaitAgent(agent);
-            
+
         }
 
         void RunNunitTrackMethod(string target, ProfilerMessageDispatcher dispatcher)
@@ -225,7 +211,7 @@ namespace NUFL.Framework.Test.ProfilerCommunication
 
         void ProcessCovData(object arg)
         {
-            
+
 
         }
 
@@ -233,7 +219,7 @@ namespace NUFL.Framework.Test.ProfilerCommunication
         public void NunitCommunicationWithProfiler()
         {
             ProfilerMessageDispatcher dispatcher = new ProfilerMessageDispatcher();
-            dispatcher.RegisterHandler(MSG_Type.MSG_TrackAssembly, 
+            dispatcher.RegisterHandler(MSG_Type.MSG_TrackAssembly,
                 (msg, data_stream) =>
                 {
                     MSG_TrackAssembly_Request ta_req = (MSG_TrackAssembly_Request)msg;
@@ -241,7 +227,7 @@ namespace NUFL.Framework.Test.ProfilerCommunication
                     MSG_TrackAssembly_Response response;
                     response.track = false;
                     response.testInvokerCount = 0;
-                    response.invokerTokens = new int[0];
+                    response.invokerTokens = new int[MSG_TrackAssembly_Response.TOKENS_SIZE_CONST];
                     ProfilerMessageDispatcher.SendMessage<MSG_TrackAssembly_Response>(data_stream, ref response);
                 });
             dispatcher.Start();
@@ -250,63 +236,14 @@ namespace NUFL.Framework.Test.ProfilerCommunication
             dispatcher.Dispose();
         }
 
-        [Test]
-        public void TrackMethod()
+
+        public class TestEventHandler : MarshalByRefObject, ITestEventListener
         {
-           
-            ProfilerMessageDispatcher dispatcher = new ProfilerMessageDispatcher();
-            dispatcher.RegisterHandler(MSG_Type.MSG_TrackAssembly, new Action<object, IPCStream>(
-                (msg, data_stream) =>
-                {
-                    
-                    MSG_TrackAssembly_Request ta_req = (MSG_TrackAssembly_Request)msg;
-                    MSG_TrackAssembly_Response response;
-                    if(_filter.UseAssembly(ta_req.assemblyName))
-                    {
-                        response.track = true;
-                        Debug.WriteLine("Tracking " + ta_req.assemblyName);
-                    } else
-                    {
-                        Debug.WriteLine("Not Tracking " + ta_req.assemblyName);
-                        response.track = false;
-                    }
-                    response.testInvokerCount = 0;
-                    response.invokerTokens = new int[0];
-                    ProfilerMessageDispatcher.SendMessage<MSG_TrackAssembly_Response>(data_stream, ref response);
-                }));
-            dispatcher.RegisterHandler(MSG_Type.MSG_TrackMethod,
-                (msg, data_stream) =>
-                {
-                    MSG_TrackMethod_Request tm_req = (MSG_TrackMethod_Request)msg;
-                    MSG_TrackMethod_Response response = new MSG_TrackMethod_Response();
-                    response.track = false;
-                    response.uniqueId = 0;
-                   // Debug.WriteLine("Not Tracking Method {0}", tm_req.functionToken);
-                    ProfilerMessageDispatcher.SendMessage<MSG_TrackMethod_Response>(data_stream, ref response);
-                });
-            dispatcher.RegisterHandler(MSG_Type.MSG_GetSequencePoints,
-                (msg, data_stream) =>
-                {
-                    Debug.WriteLine("GetSequence points");
-                    MSG_GetSequencePoints_Response response = new MSG_GetSequencePoints_Response();
-                    response.count = 0;
-                    ProfilerMessageDispatcher.SendMessage<MSG_GetSequencePoints_Response>(data_stream, ref response);
-                });
-            dispatcher.Start();
-            RunNunitTrackMethod(@"E:\workplace\NUFL\bin\Debug\NUFL.TestTarget.dll", dispatcher);
-            dispatcher.Stop();
+
+            public void OnTestEvent(string report)
+            {
+                Debug.WriteLine("onTestEvent" + report);
+            }
         }
-
-
-
     }
-
-     public class TestEventHandler : MarshalByRefObject, ITestEventListener
-     {
-
-         public void OnTestEvent(string report)
-         {
-             Debug.WriteLine("onTestEvent" + report);
-         }
-     }
 }

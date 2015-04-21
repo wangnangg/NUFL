@@ -14,7 +14,7 @@ namespace NUFL.Framework.Model
     /// <summary>
     /// The details of a module
     /// </summary>
-    public class Module : SummarySkippedEntity
+    public class Module  
     {
         /// <summary>
         /// simple constructor
@@ -40,20 +40,12 @@ namespace NUFL.Framework.Model
         /// </summary>
         public string ModuleName { get; set; }
 
-        /// <summary>
-        /// The files that make up the module
-        /// </summary>
-        public File[] Files { get; set; }
 
         /// <summary>
         /// The classes that make up the module
         /// </summary>
         public Class[] Classes { get; set; }
 
-        /// <summary>
-        /// Methods that are being tracked i.e. test methods
-        /// </summary>
-        public TrackedMethod[] TrackedMethods { get; set; }
 
         /// <summary>
         /// A hash of the file used to group them together (especially when running against mstest)
@@ -61,9 +53,5 @@ namespace NUFL.Framework.Model
         [XmlAttribute("hash")]
         public string ModuleHash { get; set; }
 
-        public override void MarkAsSkipped(SkippedMethod reason)
-        {
-            SkippedDueTo = reason;
-        }
     }
 }

@@ -24,13 +24,13 @@ namespace NUFL.Framework.Model
             _symbolManager = symbolManager;
         }
 
-        public Module BuildModuleModel(bool full)
+        public Module BuildModuleModel()
         {
-            var module = CreateModule(full);
+            var module = CreateModule();
             return module;
         }
 
-        private Module CreateModule(bool full)
+        private Module CreateModule()
         {
             var hash = string.Empty;
             if (System.IO.File.Exists(_symbolManager.ModulePath))
@@ -45,14 +45,10 @@ namespace NUFL.Framework.Model
                              };
             module.Aliases.Add(_symbolManager.ModulePath);
             
-            if (full)
+            module.Classes = _symbolManager.GetInstrumentableTypes();
+            foreach (var @class in module.Classes)
             {
-                module.Files = _symbolManager.GetFiles();
-                module.Classes = _symbolManager.GetInstrumentableTypes();
-                foreach (var @class in module.Classes)
-                {
-                    BuildClassModel(@class, module.Files);
-                }
+                BuildClassModel(@class);
             }
             return module;
         }
@@ -71,26 +67,19 @@ namespace NUFL.Framework.Model
             get { return _symbolManager.SourceAssembly != null; }
         }
 
-        private void BuildClassModel(Class @class, File[] files)
+        private void BuildClassModel(Class @class)
         {
-            if (@class.ShouldSerializeSkippedDueTo()) 
+            if (@class.Skipped) 
                 return;
-            var methods = _symbolManager.GetMethodsForType(@class, files);
+            var methods = _symbolManager.GetMethodsForType(@class);
 
             foreach (var method in methods)
             {
-                if (!method.ShouldSerializeSkippedDueTo())
+                if (!method.Skipped)
                 {
-                    method.SequencePoints = _symbolManager.GetSequencePointsForToken(method.MetadataToken);
-                    if (method.SequencePoints.Maybe(_ => _.Any()))
-                    {
-                        method.MethodPoint = method.SequencePoints.FirstOrDefault(pt => pt.Offset == 0);
-                        method.BranchPoints = _symbolManager.GetBranchPointsForToken(method.MetadataToken);
-                    }
-                    method.MethodPoint = method.MethodPoint ?? new InstrumentationPoint();
-                    method.BranchPoints = method.BranchPoints ?? new BranchPoint[0];
+                    method.Points = _symbolManager.GetSequencePointsForToken(method.MetadataToken);
                 }
-                method.CyclomaticComplexity = _symbolManager.GetCyclomaticComplexityForToken(method.MetadataToken);
+                //method.CyclomaticComplexity = _symbolManager.GetCyclomaticComplexityForToken(method.MetadataToken);
             }
 
             @class.Methods = methods;

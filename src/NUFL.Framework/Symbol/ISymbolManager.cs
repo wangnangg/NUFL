@@ -14,15 +14,12 @@ namespace NUFL.Framework.Symbol
 
         string ModuleName { get; }
 
-        File[] GetFiles();
 
         Class[] GetInstrumentableTypes();
 
-        Method[] GetMethodsForType(Class type, File[] files);
+        Method[] GetMethodsForType(Class type);
 
-        SequencePoint[] GetSequencePointsForToken(int token);
-
-        BranchPoint[] GetBranchPointsForToken(int token);
+        InstrumentationPoint[] GetSequencePointsForToken(int token);
 
         int GetCyclomaticComplexityForToken(int token);
 

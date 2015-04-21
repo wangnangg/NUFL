@@ -13,6 +13,6 @@ namespace NUFL.Framework.Persistance
         void PersistModule(Module module);
         void PersistTestResult(string xml_result);
         void SaveCoverageData(UInt32[] data, UInt32 length);
-        void Commit();
+        void Commit(int result_count);
     }
 }

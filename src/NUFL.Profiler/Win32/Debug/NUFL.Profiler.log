@@ -1,31 +1,89 @@
-﻿Build started 2015/4/7 11:16:26.
-     1>Project "E:\workplace\NUFL\src\NUFL.Profiler\NUFL.Profiler.vcxproj" on node 2 (Build target(s)).
-     1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D _USRDLL /D _WINDLL /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"Win32\Debug\NUFL.Profiler32.pch" /Fo"Win32\Debug\\" /Fd"Win32\Debug\vc120.pdb" /doc"Win32\Debug\\" /Gd /TP /analyze- /errorReport:prompt CodeCoverage.cpp CodeCoverage_Callback.cpp CodeCoverage_ProfilerInfo.cpp HostCommunication.cpp IPCStream.cpp NativeCallback.cpp
-         CodeCoverage.cpp
-     1>e:\workplace\nufl\src\nufl.profiler\hostcommunication.h(101): warning C4800: 'BOOL' : forcing value to bool 'true' or 'false' (performance warning)
-         Generating Code...
-         Compiling...
+﻿Build started 2015/4/21 17:48:22.
+     1>Project "E:\workplace\NUFL\src\NUFL.Profiler\NUFL.Profiler.vcxproj" on node 4 (Rebuild target(s)).
+     1>Midl:
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\midl.exe /D _DEBUG /W1 /nologo /char signed /env win32 /Oicf /h "OpenCoverProfiler_i.h" /iid "OpenCoverProfiler_i.c" /proxy "OpenCoverProfiler_p.c" /tlb "Win32\Debug\OpenCoverProfiler.tlb" /robust OpenCoverProfiler.idl 
+         Processing .\OpenCoverProfiler.idl
+         OpenCoverProfiler.idl
+         Processing C:\Program Files (x86)\Windows Kits\8.1\Include\um\oaidl.idl
+         oaidl.idl
+         Processing C:\Program Files (x86)\Windows Kits\8.1\Include\um\objidl.idl
+         objidl.idl
+         Processing C:\Program Files (x86)\Windows Kits\8.1\Include\um\unknwn.idl
+         unknwn.idl
+         Processing C:\Program Files (x86)\Windows Kits\8.1\Include\shared\wtypes.idl
+         wtypes.idl
+         Processing C:\Program Files (x86)\Windows Kits\8.1\Include\shared\wtypesbase.idl
+         wtypesbase.idl
+         Processing C:\Program Files (x86)\Windows Kits\8.1\Include\shared\basetsd.h
+         basetsd.h
+         Processing C:\Program Files (x86)\Windows Kits\8.1\Include\shared\guiddef.h
+         guiddef.h
+         Processing C:\Program Files (x86)\Windows Kits\8.1\Include\um\ocidl.idl
+         ocidl.idl
+         Processing C:\Program Files (x86)\Windows Kits\8.1\Include\um\oleidl.idl
+         oleidl.idl
+         Processing C:\Program Files (x86)\Windows Kits\8.1\Include\um\servprov.idl
+         servprov.idl
+         Processing C:\Program Files (x86)\Windows Kits\8.1\Include\um\urlmon.idl
+         urlmon.idl
+         Processing C:\Program Files (x86)\Windows Kits\8.1\Include\um\msxml.idl
+         msxml.idl
+         Processing C:\Program Files (x86)\Windows Kits\8.1\Include\um\corprof.idl
+         corprof.idl
+     1>C:\Program Files (x86)\Windows Kits\8.1\Include\um\corprof.idl : warning C4819: The file contains a character that cannot be represented in the current code page (936). Save the file in Unicode format to prevent data loss
+         Processing C:\Program Files (x86)\Windows Kits\8.1\Include\um\oaidl.acf
+         oaidl.acf
+         Processing C:\Program Files (x86)\Windows Kits\8.1\Include\um\ocidl.acf
+         ocidl.acf
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D _USRDLL /D _WINDLL /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yc"stdafx.h" /Fp"Win32\Debug\NUFL.Profiler32.pch" /Fo"Win32\Debug\\" /Fd"Win32\Debug\vc120.pdb" /doc"Win32\Debug\\" /Gd /TP /analyze- /errorReport:prompt stdafx.cpp
+         stdafx.cpp
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D _USRDLL /D _WINDLL /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Yu"stdafx.h" /Fp"Win32\Debug\NUFL.Profiler32.pch" /Fo"Win32\Debug\\" /Fd"Win32\Debug\vc120.pdb" /doc"Win32\Debug\\" /Gd /TP /analyze- /errorReport:prompt CodeCoverage.cpp CodeCoverage_Callback.cpp CodeCoverage_ProfilerInfo.cpp CoverageInstrumentation.cpp HostCommunication.cpp Instruction.cpp IPCStream.cpp Method.cpp NativeCallback.cpp OpenCover.Profiler.cpp ProfilerCommunication.cpp ExceptionHandler.cpp SharedMemory.cpp Operations.cpp
+         Operations.cpp
+         SharedMemory.cpp
+         ExceptionHandler.cpp
+         ProfilerCommunication.cpp
+     1>e:\workplace\nufl\src\nufl.profiler\profilercommunication.cpp(217): warning C4002: too many actual parameters for macro 'RELTRACE'
+     1>e:\workplace\nufl\src\nufl.profiler\profilercommunication.cpp(402): warning C4002: too many actual parameters for macro 'RELTRACE'
+         OpenCover.Profiler.cpp
          NativeCallback.cpp
      1>e:\workplace\nufl\src\nufl.profiler\hostcommunication.h(101): warning C4800: 'BOOL' : forcing value to bool 'true' or 'false' (performance warning)
+     1>e:\workplace\nufl\src\nufl.profiler\hostcommunication.h(156): warning C4018: '<' : signed/unsigned mismatch
+     1>e:\workplace\nufl\src\nufl.profiler\hostcommunication.h(163): warning C4018: '<' : signed/unsigned mismatch
+         Method.cpp
+         IPCStream.cpp
+         Instruction.cpp
          HostCommunication.cpp
      1>e:\workplace\nufl\src\nufl.profiler\hostcommunication.h(101): warning C4800: 'BOOL' : forcing value to bool 'true' or 'false' (performance warning)
+     1>e:\workplace\nufl\src\nufl.profiler\hostcommunication.h(156): warning C4018: '<' : signed/unsigned mismatch
+     1>e:\workplace\nufl\src\nufl.profiler\hostcommunication.h(163): warning C4018: '<' : signed/unsigned mismatch
+         CoverageInstrumentation.cpp
          CodeCoverage_ProfilerInfo.cpp
      1>e:\workplace\nufl\src\nufl.profiler\hostcommunication.h(101): warning C4800: 'BOOL' : forcing value to bool 'true' or 'false' (performance warning)
+     1>e:\workplace\nufl\src\nufl.profiler\hostcommunication.h(156): warning C4018: '<' : signed/unsigned mismatch
+     1>e:\workplace\nufl\src\nufl.profiler\hostcommunication.h(163): warning C4018: '<' : signed/unsigned mismatch
          CodeCoverage_Callback.cpp
      1>e:\workplace\nufl\src\nufl.profiler\hostcommunication.h(101): warning C4800: 'BOOL' : forcing value to bool 'true' or 'false' (performance warning)
+     1>e:\workplace\nufl\src\nufl.profiler\hostcommunication.h(156): warning C4018: '<' : signed/unsigned mismatch
+     1>e:\workplace\nufl\src\nufl.profiler\hostcommunication.h(163): warning C4018: '<' : signed/unsigned mismatch
+         CodeCoverage.cpp
+     1>e:\workplace\nufl\src\nufl.profiler\hostcommunication.h(101): warning C4800: 'BOOL' : forcing value to bool 'true' or 'false' (performance warning)
+     1>e:\workplace\nufl\src\nufl.profiler\hostcommunication.h(156): warning C4018: '<' : signed/unsigned mismatch
+     1>e:\workplace\nufl\src\nufl.profiler\hostcommunication.h(163): warning C4018: '<' : signed/unsigned mismatch
          Generating Code...
-         Skipping... (no relevant changes detected)
-         IPCStream.cpp
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D _USRDLL /D _WINDLL /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Win32\Debug\\" /Fd"Win32\Debug\vc120.pdb" /doc"Win32\Debug\\" /Gd /TP /analyze- /errorReport:prompt dllmain.cpp
          dllmain.cpp
      1>e:\workplace\nufl\src\nufl.profiler\hostcommunication.h(101): warning C4800: 'BOOL' : forcing value to bool 'true' or 'false' (performance warning)
+     1>e:\workplace\nufl\src\nufl.profiler\hostcommunication.h(156): warning C4018: '<' : signed/unsigned mismatch
+     1>e:\workplace\nufl\src\nufl.profiler\hostcommunication.h(163): warning C4018: '<' : signed/unsigned mismatch
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D _USRDLL /D _WINDLL /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MTd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Win32\Debug\\" /Fd"Win32\Debug\vc120.pdb" /doc"Win32\Debug\\" /Gd /TC /analyze- /errorReport:prompt OpenCoverProfiler_i.c xdlldata.c
          xdlldata.c
      1>cl : Command line warning D9032: '-doc' : XML documentation comments are not supported by the C compiler
          OpenCoverProfiler_i.c
      1>cl : Command line warning D9032: '-doc' : XML documentation comments are not supported by the C compiler
          Generating Code...
+       ResourceCompile:
+         C:\Program Files (x86)\Windows Kits\8.1\bin\x86\rc.exe /D _DEBUG /D _UNICODE /D UNICODE /l"0x0409" /IWin32\Debug\ /nologo /fo"Win32\Debug\OpenCover.Profiler.res" OpenCover.Profiler.rc 
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"E:\workplace\NUFL\src\\..\bin\Debug\x86\NUFL.Profiler.dll" /INCREMENTAL /NOLOGO /DEF:".\OpenCover.Profiler.def" /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /manifestinput:"C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\Include\Manifest\dpiaware.manifest" /DEBUG /PDB:"E:\workplace\NUFL\src\\..\bin\Debug\x86\NUFL.Profiler.pdb" /SUBSYSTEM:WINDOWS /TLBID:1 /DYNAMICBASE /NXCOMPAT /MACHINE:X86 /DLL Win32\Debug\OpenCover.Profiler.res
          Win32\Debug\CodeCoverage.obj
@@ -46,13 +104,14 @@
          Win32\Debug\stdafx.obj
          Win32\Debug\xdlldata.obj
          Win32\Debug\Operations.obj
+            Creating library E:\workplace\NUFL\src\\..\bin\Debug\x86\NUFL.Profiler.lib and object E:\workplace\NUFL\src\\..\bin\Debug\x86\NUFL.Profiler.exp
          NUFL.Profiler.vcxproj -> E:\workplace\NUFL\src\\..\bin\Debug\x86\NUFL.Profiler.dll
        XdcMake:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\xdcmake.exe /old "NUFL.Profiler" /nologo /Fo"E:\workplace\NUFL\src\Docs\NUFL.Profiler.xml" /FsWin32\Debug\CodeCoverage.xdc /FsWin32\Debug\CodeCoverage_Callback.xdc /FsWin32\Debug\CodeCoverage_ProfilerInfo.xdc /FsWin32\Debug\CoverageInstrumentation.xdc /FsWin32\Debug\dllmain.xdc /FsWin32\Debug\HostCommunication.xdc /FsWin32\Debug\Instruction.xdc /FsWin32\Debug\IPCStream.xdc /FsWin32\Debug\Method.xdc /FsWin32\Debug\NativeCallback.xdc /FsWin32\Debug\OpenCover.Profiler.xdc /FsWin32\Debug\OpenCoverProfiler_i.xdc /FsWin32\Debug\ProfilerCommunication.xdc /FsWin32\Debug\ExceptionHandler.xdc /FsWin32\Debug\SharedMemory.xdc /FsWin32\Debug\stdafx.xdc /FsWin32\Debug\xdlldata.xdc /FsWin32\Debug\Operations.xdc
      1>Win32\Debug\xdlldata.xdc : warning XDC0006: file(s) not found
      1>Win32\Debug\OpenCoverProfiler_i.xdc : warning XDC0006: file(s) not found
-     1>Done Building Project "E:\workplace\NUFL\src\NUFL.Profiler\NUFL.Profiler.vcxproj" (Build target(s)).
+     1>Done Building Project "E:\workplace\NUFL\src\NUFL.Profiler\NUFL.Profiler.vcxproj" (Rebuild target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:08.66
+Time Elapsed 00:00:16.29
