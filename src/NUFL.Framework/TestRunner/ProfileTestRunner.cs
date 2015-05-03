@@ -24,7 +24,7 @@ namespace NUFL.Framework.TestRunner
         IPersistance _profile_persistance;
         ProfilerMessageDispatcher _profiler_msg_dispatcher;
         IInstrumentationModelBuilderFactory _builder_factory;
-        ModuleCache _module_cache;
+        Program _module_cache;
         Thread _data_process_thread;
 
         ITestEngineRunner _runner;
@@ -47,7 +47,7 @@ namespace NUFL.Framework.TestRunner
             _option = option;
             _profile_persistance = profile_persistance;
             _builder_factory = new InstrumentationModelBuilderFactory(_option, _filter, _logger);
-            _module_cache = new ModuleCache();
+            _module_cache = new Program();
 
             StartServer();
             _runner = CreateRunner();

@@ -3,16 +3,19 @@
 //
 // This source code is released under the MIT License; see the accompanying license file.
 //
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Xml.Serialization;
-using NUFL.Framework.CBFL;
+using NUFL.Framework.Analysis;
 
 namespace NUFL.Framework.Model
 {
     /// <summary>
     /// An method entity that can be instrumented
     /// </summary>
-    public class Method:CBFLEntry
+    public class Method:ProgramEntityBase
     {
 
         /// <summary>
@@ -30,6 +33,11 @@ namespace NUFL.Framework.Model
         /// A list of sequence points that have been produced for this method
         /// </summary>
         public InstrumentationPoint[] Points { get; set; }
+
+        public Method()
+        {
+            Points = new InstrumentationPoint[0];
+        }
 
 
 
@@ -58,17 +66,43 @@ namespace NUFL.Framework.Model
         public bool IsSetter { get; set; }
 
         public bool Skipped { get; set; }
-        public Position SourcePosition { get; set; }
 
-        public override IEnumerable<CBFLEntry> GetChildrenEnumerator()
+
+        public override IEnumerable<ProgramEntityBase> DirectChildren
         {
-            if(Points == null)
+            get
             {
-                yield break;
+                if (Points == null)
+                {
+                    yield break;
+                }
+                foreach (var entry in Points)
+                {
+                    yield return entry;
+                }
+
             }
-            foreach(var entry in Points)
+        }
+
+        protected override List<ProgramEntityBase> GetDirectChildrenSortedByCov()
+        {
+            List<ProgramEntityBase> children = new List<ProgramEntityBase>(Points);
+            children.Sort((x, y) => { return x.CoveragePercent.CompareTo(y.CoveragePercent); });
+            return children;
+        }
+
+        protected override List<ProgramEntityBase> GetDirectChildrenSortedBySusp()
+        {
+            List<ProgramEntityBase> children = new List<ProgramEntityBase>(Points);
+            children.Sort((x, y) => { return -x.Susp.CompareTo(y.Susp); });
+            return children;
+        }
+
+        public override string DisplayName
+        {
+            get
             {
-                yield return entry;
+                return Name;
             }
         }
     }

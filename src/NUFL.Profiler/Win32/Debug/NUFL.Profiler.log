@@ -1,5 +1,5 @@
-﻿Build started 2015/4/21 17:48:22.
-     1>Project "E:\workplace\NUFL\src\NUFL.Profiler\NUFL.Profiler.vcxproj" on node 4 (Rebuild target(s)).
+﻿Build started 2015/4/27 19:25:18.
+     1>Project "E:\workplace\NUFL\src\NUFL.Profiler\NUFL.Profiler.vcxproj" on node 2 (Rebuild target(s)).
      1>Midl:
          C:\Program Files (x86)\Windows Kits\8.1\bin\x86\midl.exe /D _DEBUG /W1 /nologo /char signed /env win32 /Oicf /h "OpenCoverProfiler_i.h" /iid "OpenCoverProfiler_i.c" /proxy "OpenCoverProfiler_p.c" /tlb "Win32\Debug\OpenCoverProfiler.tlb" /robust OpenCoverProfiler.idl 
          Processing .\OpenCoverProfiler.idl
@@ -114,4 +114,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:16.29
+Time Elapsed 00:00:13.22

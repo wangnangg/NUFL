@@ -8,14 +8,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
-using NUFL.Framework.CBFL;
+using NUFL.Framework.Analysis;
 
 namespace NUFL.Framework.Model
 {
     /// <summary>
     /// An entity that contains methods
     /// </summary>
-    public class Class:CBFLEntry
+    public class Class:ProgramEntityBase
     {
         /// <summary>
         /// instantiate
@@ -30,7 +30,6 @@ namespace NUFL.Framework.Model
         /// </summary>
         public string FullName { get; set; }
 
-        public Position SourcePosition { get; set; }
         
 
         /// <summary>
@@ -40,14 +39,43 @@ namespace NUFL.Framework.Model
 
         public bool Skipped { get; set; }
 
-        public override IEnumerable<CBFLEntry> GetChildrenEnumerator()
+
+        public override IEnumerable<ProgramEntityBase> DirectChildren
         {
-            foreach (var method in Methods)
+            get
             {
-                foreach(var entry in method.GetChildrenEnumerator())
+                foreach(var method in Methods)
                 {
-                    yield return entry;
+                    if(method.Skipped || method.Points == null || method.Points.Length == 0)
+                    {
+                        continue;
+                    }
+                    yield return method;
                 }
+                yield break;
+            }
+        }
+
+        protected override List<ProgramEntityBase> GetDirectChildrenSortedByCov()
+        {
+            List<ProgramEntityBase> children = new List<ProgramEntityBase>(Methods);
+            children.Sort((x, y) => { return x.CoveragePercent.CompareTo(y.CoveragePercent); });
+            return children;
+        }
+
+        protected override List<ProgramEntityBase> GetDirectChildrenSortedBySusp()
+        {
+            List<ProgramEntityBase> children = new List<ProgramEntityBase>(Methods);
+            children.Sort((x, y) => { return -x.Susp.CompareTo(y.Susp); });
+            return children;
+        }
+
+
+        public override string DisplayName
+        {
+            get
+            {
+                return FullName;
             }
         }
 

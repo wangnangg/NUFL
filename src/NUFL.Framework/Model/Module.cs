@@ -14,7 +14,7 @@ namespace NUFL.Framework.Model
     /// <summary>
     /// The details of a module
     /// </summary>
-    public class Module  
+    public class Module:ProgramEntityBase
     {
         /// <summary>
         /// simple constructor
@@ -46,12 +46,54 @@ namespace NUFL.Framework.Model
         /// </summary>
         public Class[] Classes { get; set; }
 
+        public bool Skipped { get; set; }
 
         /// <summary>
         /// A hash of the file used to group them together (especially when running against mstest)
         /// </summary>
         [XmlAttribute("hash")]
         public string ModuleHash { get; set; }
+
+
+
+        public override IEnumerable<ProgramEntityBase> DirectChildren
+        {
+            get
+            {
+                foreach (var @class in Classes)
+                {
+                    if(@class.Skipped || @class.Methods == null || @class.Methods.Length == 0)
+                    {
+                        continue;
+                    }
+                    yield return @class;
+                }
+                yield break;
+            }
+        }
+
+        protected override List<ProgramEntityBase> GetDirectChildrenSortedByCov()
+        {
+            List<ProgramEntityBase> children = new List<ProgramEntityBase>(Classes);
+            children.Sort((x, y) => { return x.CoveragePercent.CompareTo(y.CoveragePercent); });
+            return children;
+        }
+
+        protected override List<ProgramEntityBase> GetDirectChildrenSortedBySusp()
+        {
+            List<ProgramEntityBase> children = new List<ProgramEntityBase>(Classes);
+            children.Sort((x, y) => { return -x.Susp.CompareTo(y.Susp); });
+            return children;
+        }
+
+        public override string DisplayName
+        {
+            get
+            {
+                return ModuleName;
+            }
+        }
+
 
     }
 }

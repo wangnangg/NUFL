@@ -8,7 +8,7 @@ using NUFL.Framework.TestRunner;
 using NUFL.Framework.Setting;
 using log4net;
 using NUFL.Framework.Persistance;
-using NUFL.Framework.CBFL;
+using NUFL.Framework.Analysis;
 using NUFL.Framework.Model;
 using NUFL.Framework.ProfilerCommunication;
 using NUFL.Framework.TestModel;

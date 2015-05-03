@@ -1,0 +1,15 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:NUFL.GUI">
+    <HierarchicalDataTemplate x:Key="TestResultItemTemplate" ItemsSource="{Binding Path=TestResults}">
+        <Grid Background="LightSkyBlue"  Margin="2" Width="100" Height="24">
+            <Image Margin="2" Width="32" Height="18" 
+			Source="{Binding Path=ImageUrl}" 
+		HorizontalAlignment="Right" 
+               	VerticalAlignment="Center" ></Image>
+            <TextBlock Margin="2" Text="{Binding Path=Name}" 
+			VerticalAlignment="Center" FontWeight="Bold" />
+        </Grid>
+    </HierarchicalDataTemplate>
+</ResourceDictionary>

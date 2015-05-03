@@ -4,15 +4,59 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Xml.Serialization;
-using NUFL.Framework.CBFL;
+using NUFL.Framework.Analysis;
 
 namespace NUFL.Framework.Model
 {
     /// <summary>
     /// An instrumentable point
     /// </summary>
-    public class InstrumentationPoint:CBFLEntry
+    public class InstrumentationPoint:ProgramEntityBase
     {
+        public int a_ep { private set; get; }
+        public int a_ef { private set; get; }
+        public int a_np { private set; get; }
+        public int a_nf { private set; get; }
+        public void Calculate(Func<InstrumentationPoint, float> formula)
+        {
+            Susp = formula(this);
+        }
+        public void Cover(bool covered, bool passed)
+        {
+            if (covered)
+            {
+                if (passed)
+                {
+                    a_ep += 1;
+                }
+                else
+                {
+                    a_ef += 1;
+                }
+            }
+            else
+            {
+                if (passed)
+                {
+                    a_np += 1;
+                }
+                else
+                {
+                    a_nf += 1;
+                }
+            }
+        }
+
+        public override void Reset(bool recursive)
+        {
+            a_ep = 0;
+            a_ef = 0;
+            a_np = 0;
+            a_nf = 0;
+            base.Reset(false);
+        }
+
+
         public static readonly List<InstrumentationPoint> InstrumentPoints = new List<InstrumentationPoint>(8192);
 
         public static int Count
@@ -20,11 +64,11 @@ namespace NUFL.Framework.Model
             get { return InstrumentPoints.Count; }
         }
 
-        public static void ResetAll()
+        public static void ResetAllLeaf()
         {
             foreach(var entry in InstrumentPoints)
             {
-                entry.Reset();
+                entry.Reset(false);
             }
         }
 
@@ -54,10 +98,29 @@ namespace NUFL.Framework.Model
         /// </summary>
         public int Offset { get; set; }
 
+        public override int LeafChildrenCount
+        {
+            get
+            {
+                return 1;
+            }
+        }
 
+        public override int CoveredLeafChildrenCount
+        {
+            get
+            {
+                return (a_ef + a_ep) > 0 ? 1 : 0;
+            }
+        }
 
+        public override string DisplayName
+        {
+            get
+            {
+                return UniqueSequencePoint.ToString();
+            }
+        }
        
-
-        public Position SourcePosition { set; get; } 
     }
 }

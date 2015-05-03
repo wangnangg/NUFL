@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace NUFL.Framework.Model
 {
-    public class Position
+    public class Position : MarshalByRefObject
     {
         public Position()
         {
@@ -14,7 +14,7 @@ namespace NUFL.Framework.Model
         }
         public Position(string filepath, int startline, int startcol)
         {
-            FileId = GetFileId(filepath);
+            SourceFile = filepath;
             StartLine = startline;
             StartColumn = startcol;
         }
@@ -29,8 +29,21 @@ namespace NUFL.Framework.Model
             Files.Add(filename);
             return Files.Count - 1;
         }
-        public int FileId;
-        public int StartLine;
-        public int StartColumn;
+        private int _file_id;
+        private int _start_line;
+        private int _start_column;
+        public string SourceFile 
+        {
+            get
+            {
+                return Files[_file_id];
+            }
+            set
+            {
+                _file_id = GetFileId(value);
+            }
+        }
+        public int StartLine { get; set; }
+        public int StartColumn { get; set; }
     }
 }

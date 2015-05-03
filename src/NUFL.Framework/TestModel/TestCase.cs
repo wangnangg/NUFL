@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using System.Xml;
-using NUFL.Framework.CBFL;
+using NUFL.Framework.Analysis;
 
 namespace NUFL.Framework.TestModel
 {

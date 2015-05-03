@@ -1,0 +1,5 @@
+E:\workplace\NUFL\bin\Debug\NUFL.Framework.dll
+E:\workplace\NUFL\bin\Debug\NUFL.Framework.pdb
+E:\workplace\NUFL\src\NUFL.Framework\obj\Debug\NUFL.Framework.dll
+E:\workplace\NUFL\src\NUFL.Framework\obj\Debug\NUFL.Framework.pdb
+E:\workplace\NUFL\src\NUFL.Framework\obj\Debug\NUFL.Framework.csprojResolveAssemblyReference.cache

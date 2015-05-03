@@ -1,0 +1,13 @@
+﻿<Window x:Class="NUFL.GUI.Test.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:nufl="clr-namespace:NUFL.GUI;assembly=NUFL.GUI"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:cbfl="clr-namespace:NUFL.Framework.Analysis;assembly=NUFL.Framework"
+        xmlns:view="clr-namespace:NUFL.GUI.View;assembly=NUFL.GUI"
+        Title="MainWindow" Height="350" Width="525" Loaded="Window_Loaded">
+    <view:FLResultView x:Name="_result_view">
+        
+    </view:FLResultView>
+ 
+</Window>

@@ -46,7 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CBFL\FaultLocatorTests.cs" />
+    <Compile Include="Analysis\FaultLocatorTests.cs" />
     <Compile Include="Model\InstrumentationModuleBuilderTests.cs" />
     <Compile Include="NUnitTestFilter\IdFilterTests.cs" />
     <Compile Include="ProfilerCommunication\IPCStreamTests.cs" />
@@ -62,6 +62,14 @@
     <ProjectReference Include="..\NUFL.Framework\NUFL.Framework.csproj">
       <Project>{6b01b019-0d29-415b-b9b2-c1be22826c0b}</Project>
       <Name>NUFL.Framework</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NUFL.GUI\NUFL.GUI.csproj">
+      <Project>{690b0a89-dca3-4fdb-8e61-4ff3bb0fb5a4}</Project>
+      <Name>NUFL.GUI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NUFL.LocalService\NUFL.Service.csproj">
+      <Project>{be123b92-605a-462f-bfb7-5403f0979f67}</Project>
+      <Name>NUFL.Service</Name>
     </ProjectReference>
     <ProjectReference Include="..\NUnit.Engine\nunit.engine.api\nunit.engine.api.csproj">
       <Project>{775fad50-3623-4922-97c4-dfb29a8be4c7}</Project>

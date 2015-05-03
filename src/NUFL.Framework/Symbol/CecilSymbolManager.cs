@@ -177,7 +177,7 @@ namespace NUFL.Framework.Symbol
                 if (!typeDefinition.IsValueType || filepath != null)
                 {
                     @class.SourcePosition = new Position();
-                    @class.SourcePosition.FileId = Position.GetFileId(filepath);
+                    @class.SourcePosition.SourceFile = filepath;
                     @class.SourcePosition.StartLine = start_line;
                     @class.SourcePosition.StartColumn = start_col;
                     classes.Add(@class);
@@ -282,8 +282,7 @@ namespace NUFL.Framework.Symbol
                 {
                     if (instruction.SequencePoint != null)
                     {
-                        method.SourcePosition.FileId = 
-                            Position.GetFileId(instruction.SequencePoint.Document.Url);
+                        method.SourcePosition.SourceFile = instruction.SequencePoint.Document.Url;
                         method.SourcePosition.StartLine = instruction.SequencePoint.StartLine;
                         method.SourcePosition.StartColumn = instruction.SequencePoint.StartColumn;
                         return method;

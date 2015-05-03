@@ -54,15 +54,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CBFL\CBFLEntry.cs" />
-    <Compile Include="Model\ModuleCache.cs" />
+    <Compile Include="Model\ProgramEntityBase.cs" />
+    <Compile Include="Analysis\RankList.cs" />
+    <Compile Include="Model\Program.cs" />
     <Compile Include="Model\Position.cs" />
-    <Compile Include="CBFL\Coverage.cs" />
-    <Compile Include="CBFL\FaultLocator.cs" />
+    <Compile Include="Analysis\Coverage.cs" />
+    <Compile Include="Analysis\FaultLocator.cs" />
     <Compile Include="HelperExtensions.cs" />
-    <Compile Include="CBFL\FormulaFactory.cs" />
-    <Compile Include="CBFL\IFaultLocator.cs" />
-    <Compile Include="CBFL\RankEntry.cs" />
+    <Compile Include="Analysis\FormulaFactory.cs" />
+    <Compile Include="Analysis\IFaultLocator.cs" />
     <Compile Include="NUnitTestFilter\IdFilter.cs" />
     <Compile Include="Persistance\IPersistance.cs" />
     <Compile Include="ProfilerCommunication\ProfilerRegistration.cs">
@@ -104,6 +104,9 @@
       <Project>{372a3447-d657-40ff-a089-77c19fec30c8}</Project>
       <Name>nunit.engine</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
