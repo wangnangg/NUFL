@@ -6,7 +6,7 @@
         xmlns:cbfl="clr-namespace:NUFL.Framework.Analysis;assembly=NUFL.Framework"
         xmlns:view="clr-namespace:NUFL.GUI.View;assembly=NUFL.GUI"
         Title="MainWindow" Height="350" Width="525" Loaded="Window_Loaded">
-    <view:FLResultView x:Name="_result_view">
+    <view:FLResultView x:Name="_result_view" Margin="0,0,0,0">
         
     </view:FLResultView>
  

@@ -9,18 +9,23 @@ using NUFL.Framework.ProfilerCommunication;
 using System.Xml;
 using NUFL.Framework.Model;
 using NUFL.Framework.Persistance;
-using NUFL.Framework.TestModel;
+using NUFL.Service;
+using NUFL.Framework.Setting;
 
 namespace NUFL.Framework.Analysis
 {
-    public class FaultLocator:IPersistance, IFaultLocator
+    public class FaultLocator : MarshalByRefObject, IPersistance
     {
-        List<TestCase> _tc_list = new List<TestCase>();
+        List<TestResult> _tc_list = new List<TestResult>();
         List<Coverage> _cov_list = new List<Coverage>();
         FormulaFactory _formula_factory = new FormulaFactory();
         Program _program = new Program();
         int _tc_count = 0;
         int _cov_count = 0;
+
+        public IFLResultPresenter Presenter { set; get; }
+
+        public IOption Option { set; get; }
 
         int ValidDataCount
         {
@@ -34,16 +39,14 @@ namespace NUFL.Framework.Analysis
             _program.AddModule(module);
         }
 
-        public void PersistTestResult(string xml_result)
+        public void PersistTestResult(NUFL.Framework.TestModel.TestResult result)
         {
-            try
+            TestResult ourresult = new TestResult()
             {
-                var tc = TestCase.ParseFromXml(xml_result);
-                _tc_list.Add(tc);
-                _tc_count += 1;
-                //Debug.WriteLine(xml_result);
-            }
-            catch (Exception) { }
+                Passed = result.Outcome == TestModel.TestOutcome.Passed ? true : false,
+            };
+            _tc_list.Add(ourresult);
+            _tc_count += 1;
         }
 
         Coverage current;
@@ -71,21 +74,34 @@ namespace NUFL.Framework.Analysis
                 if((uid & (UInt32)MSG_IdType.IT_Mask) > 0)
                 {
                     //this is uid
-                    current.Cover(uid);
+                    if(current != null)
+                    {
+                        current.Cover(uid);
+                    }
                     continue;
                 }
             }
         }
 
         int poll_time = 50;
+        int max_time = 5000;
         public void Commit(int result_count)
         {
+            int wait_time = 0; 
             while(ValidDataCount < result_count)
             {
                 System.Threading.Thread.Sleep(poll_time);
+                wait_time += poll_time;
+                if(wait_time > max_time)
+                {
+                    break;
+                }
             }
             Match();
-           
+            if(Presenter != null)
+            {
+                Presenter.Present(GetRankList(Option.FLMethod));
+            }
         }
 
         void Match()
@@ -98,33 +114,22 @@ namespace NUFL.Framework.Analysis
 
 
 
-        public RankList GetRankList(Func<TestCase, bool> filter, string method)
+        public RankList GetRankList(string method)
         {
             Match();
-            var test_cases = _tc_list.GetRange(0,ValidDataCount).Where(filter);
+            var test_cases = _tc_list;
             var formula = _formula_factory.CreateFormula(method);
             InputTestCases(test_cases, formula);
 
             return new RankList(_program);
         }
 
-        private void InputTestCases(IEnumerable<TestCase> test_cases, Func<InstrumentationPoint, float> formula)
+        private void InputTestCases(IEnumerable<TestResult> test_cases, Func<InstrumentationPoint, float> formula)
         {
             _program.Reset(true);
             foreach(var tc in test_cases)
             {
-                bool passed;
-                if(tc.Result == "Passed")
-                {
-                    passed = true;
-                }
-                else if (tc.Result == "Failed")
-                {
-                    passed = false; 
-                } else
-                {
-                    continue;
-                }
+                bool passed = tc.Passed;
                 for(uint i=0; i<tc.Coverage.Count; i++)
                 {
                     if (tc.Coverage.IsCovered(i))
@@ -141,5 +146,7 @@ namespace NUFL.Framework.Analysis
                 entry.Calculate(formula);
             }
         }
+
+
     }
 }

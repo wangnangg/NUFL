@@ -4,36 +4,23 @@
         "NUFL.Profiler"
     </assembly>
     <members>
-        <member name="M:CCodeCoverage.JITCompilationStarted(System.UInt64,System.Int32)">
-            <summary>Handle <c>ICorProfilerCallback::JITCompilationStarted</c></summary>
-            <remarks>The 'workhorse' </remarks>
+        <member name="M:CCodeCoverage.GetMethodSignatureToken_I4(System.UInt32)">
+            <summary>Get the token for a method having a single I4 parameter</summary>
         </member>
-        <member name="M:CCodeCoverage.AddSafeCuckooBody(System.UInt64)">
-            <summary>This is the body of our method marked with the SecuritySafeCriticalAttribute</summary>
-            <remarks>Calls the method that is marked with the SecurityCriticalAttribute</remarks>
+        <member name="M:CCodeCoverage.GetTokenAndModule(System.UInt32,System.UInt32*!System.Runtime.CompilerServices.IsImplicitlyDereferenced,System.UInt32*!System.Runtime.CompilerServices.IsImplicitlyDereferenced,std.basic_string&lt;System.Char,std.char_traits{System.Char},std.allocator&lt;System.Char&gt;&gt;*!System.Runtime.CompilerServices.IsImplicitlyDereferenced,System.UInt32*)">
+            <summary>
+Get the function token, module ID and module name for a supplied FunctionID
+</summary>
         </member>
-        <member name="M:CCodeCoverage.AddCriticalCuckooBody(System.UInt64)">
-            <summary>This is the method marked with the SecurityCriticalAttribute</summary>
-            <remarks>This method makes the call into the profiler</remarks>
+        <member name="M:CCodeCoverage.GetAssemblyName(System.UInt32)">
+            <summary>
+Get the assembly name from an AssemblyID
+</summary>
         </member>
-        <member name="M:CCodeCoverage.ModuleAttachedToAssembly(System.UInt64,System.UInt64)">
-            <summary>Handle <c>ICorProfilerCallback::ModuleAttachedToAssembly</c></summary>
-            <remarks>Inform the host that we have a new module attached and that it may be 
-of interest</remarks>
-        </member>
-        <member name="M:InstrumentPointVisit(System.UInt32!System.Runtime.CompilerServices.IsLong)">
-            <summary>An unmanaged callback that can be called from .NET that has a single I4 parameter</summary>
-            <remarks>
-void (__fastcall *pt)(long) = &amp;SequencePointVisit ;
-mdSignature pmsig = GetUnmanagedMethodSignatureToken_I4(moduleId);
-</remarks>
-        </member>
-        <member name="M:CCodeCoverage.Shutdown">
-            <summary>Handle <c>ICorProfilerCallback::Shutdown</c></summary>
-        </member>
-        <member name="M:CCodeCoverage.Initialize(IUnknown*)">
-            <summary>Handle <c>ICorProfilerCallback::Initialize</c></summary>
-            <remarks>Initialize the profiling environment and establish connection to the host</remarks>
+        <member name="M:CCodeCoverage.GetModulePath(System.UInt32)">
+            <summary>
+Gets the module name from a ModuleID
+</summary>
         </member>
         <member name="M:Operations.#ctor">
             <summary>Build the static instance</summary>
@@ -162,36 +149,39 @@ beforehand</remarks>
         <member name="M:Method.ReadMethod(IMAGE_COR_ILMETHOD*)">
             <summary>Read the full method from the supplied buffer.</summary>
         </member>
-        <member name="M:CCodeCoverage.GetMethodSignatureToken_I4(System.UInt64)">
-            <summary>Get the token for a method having a single I4 parameter</summary>
+        <member name="M:CCodeCoverage.JITCompilationStarted(System.UInt32,System.Int32)">
+            <summary>Handle <c>ICorProfilerCallback::JITCompilationStarted</c></summary>
+            <remarks>The 'workhorse' </remarks>
         </member>
-        <member name="M:CCodeCoverage.GetTokenAndModule(System.UInt64,System.UInt32*!System.Runtime.CompilerServices.IsImplicitlyDereferenced,System.UInt64*!System.Runtime.CompilerServices.IsImplicitlyDereferenced,std.basic_string&lt;System.Char,std.char_traits{System.Char},std.allocator&lt;System.Char&gt;&gt;*!System.Runtime.CompilerServices.IsImplicitlyDereferenced,System.UInt64*)">
-            <summary>
-Get the function token, module ID and module name for a supplied FunctionID
-</summary>
+        <member name="M:CCodeCoverage.AddSafeCuckooBody(System.UInt32)">
+            <summary>This is the body of our method marked with the SecuritySafeCriticalAttribute</summary>
+            <remarks>Calls the method that is marked with the SecurityCriticalAttribute</remarks>
         </member>
-        <member name="M:CCodeCoverage.GetAssemblyName(System.UInt64)">
-            <summary>
-Get the assembly name from an AssemblyID
-</summary>
+        <member name="M:CCodeCoverage.AddCriticalCuckooBody(System.UInt32)">
+            <summary>This is the method marked with the SecurityCriticalAttribute</summary>
+            <remarks>This method makes the call into the profiler</remarks>
         </member>
-        <member name="M:CCodeCoverage.GetModulePath(System.UInt64)">
-            <summary>
-Gets the module name from a ModuleID
-</summary>
+        <member name="M:CCodeCoverage.ModuleAttachedToAssembly(System.UInt32,System.UInt32)">
+            <summary>Handle <c>ICorProfilerCallback::ModuleAttachedToAssembly</c></summary>
+            <remarks>Inform the host that we have a new module attached and that it may be 
+of interest</remarks>
+        </member>
+        <member name="M:InstrumentPointVisit(System.UInt32!System.Runtime.CompilerServices.IsLong)">
+            <summary>An unmanaged callback that can be called from .NET that has a single I4 parameter</summary>
+            <remarks>
+void (__fastcall *pt)(long) = &amp;SequencePointVisit ;
+mdSignature pmsig = GetUnmanagedMethodSignatureToken_I4(moduleId);
+</remarks>
+        </member>
+        <member name="M:CCodeCoverage.Shutdown">
+            <summary>Handle <c>ICorProfilerCallback::Shutdown</c></summary>
+        </member>
+        <member name="M:CCodeCoverage.Initialize(IUnknown*)">
+            <summary>Handle <c>ICorProfilerCallback::Initialize</c></summary>
+            <remarks>Initialize the profiling environment and establish connection to the host</remarks>
         </member>
         <member name="T:CCodeCoverage">
             <summary>The main profiler COM object</summary>
-        </member>
-        <member name="T:ProfilerCommunication">
-            <summary>Handles communication back to the profiler host</summary>
-            <remarks>Currently this is handled by using the WebServices API</remarks>
-        </member>
-        <member name="M:IPCStream.Initialize(System.UInt32)">
-            <summary>constructor for server side only for test purpose</summary>
-        </member>
-        <member name="M:IPCStream.Initialize(std.basic_string&lt;System.Char,std.char_traits{System.Char},std.allocator&lt;System.Char&gt;&gt;!System.Runtime.CompilerServices.IsConst*!System.Runtime.CompilerServices.IsImplicitlyDereferenced,System.UInt32)">
-            <summary>constructor for client side</summary>
         </member>
         <member name="T:Method">
             <summary>The <c>Method</c> entity builds a 'model' of the IL that can then be modified</summary>
@@ -236,6 +226,16 @@ when pulling in "opcode.def"</remarks>
             <summary>A list of opcodes</summary>
             <remarks>Used, amongst other things, to build the <c>OperationDetails</c> structures 
 when pulling in "opcode.def"</remarks>
+        </member>
+        <member name="M:IPCStream.Initialize(System.UInt32)">
+            <summary>constructor for server side only for test purpose</summary>
+        </member>
+        <member name="M:IPCStream.Initialize(std.basic_string&lt;System.Char,std.char_traits{System.Char},std.allocator&lt;System.Char&gt;&gt;!System.Runtime.CompilerServices.IsConst*!System.Runtime.CompilerServices.IsImplicitlyDereferenced,System.UInt32)">
+            <summary>constructor for client side</summary>
+        </member>
+        <member name="T:ProfilerCommunication">
+            <summary>Handles communication back to the profiler host</summary>
+            <remarks>Currently this is handled by using the WebServices API</remarks>
         </member>
     </members>
 </doc>

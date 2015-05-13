@@ -1,0 +1,23 @@
+<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011">
+  <Metadata>
+    <Identity Id="6657f482-4929-4847-832a-0d32ae71902b" Version="1.0" Language="en-US" Publisher="Buaa" />
+    <DisplayName>NUFL.VSPackage</DisplayName>
+    <Description>A Fault Localization Tool</Description>
+  </Metadata>
+  <Installation InstalledByMsi="false">
+    <InstallationTarget Id="Microsoft.VisualStudio.Pro" Version="[12.0]" />
+  </Installation>
+  <Dependencies>
+    <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" Version="[4.5,)" />
+    <Dependency Id="Microsoft.VisualStudio.MPF.12.0" DisplayName="Visual Studio MPF 12.0" Version="[12.0]" />
+  </Dependencies>
+  <Assets>
+    <Asset Type="Microsoft.VisualStudio.VsPackage" Path="NUFL.VSPackage.pkgdef" />
+    <Asset Type="UnitTestExtension" Path="NUFL.VSPackage.dll" />
+    <Asset Type="x86Agent" Path="nunit-agent-x86.exe" />
+    <Asset Type="x64Agent" Path="nunit-agent.exe" />
+    <Asset Type="x86Profiler" Path="x86\NUFL.Profiler.dll" />
+    <Asset Type="x64Profiler" Path="x64\NUFL.Profiler.dll" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" Path="NUFL.VSPackage.dll" />
+  </Assets>
+</PackageManifest>

@@ -8,55 +8,71 @@ using NUFL.Framework.Setting;
 using NUFL.Framework.Persistance;
 using log4net;
 using NUFL.Framework.ProfilerCommunication;
+using INUnitTestEventListener = NUnit.Engine.ITestEventListener;
 using NUnit.Engine;
 using NUnit.Engine.Internal;
 using NUFL.Framework.Model;
 using System.Threading;
 using NUFL.Framework.Symbol;
 using NUFL.Framework.TestModel;
+using NUFL.Service;
+using System.Xml;
+using System.Xml.Serialization;
+using System.Runtime.Remoting.Lifetime;
 namespace NUFL.Framework.TestRunner
 {
-    public class ProfileTestRunner : MarshalByRefObject, ITestEventListener
+    class ProfileTestRunner : RemoteRunnerBase, INUnitTestEventListener, ITestExectuor, ITestDiscoverer
     {
-        IOption _option;
-        IFilter _filter;
-        ILog _logger;
-        IPersistance _profile_persistance;
         ProfilerMessageDispatcher _profiler_msg_dispatcher;
-        IInstrumentationModelBuilderFactory _builder_factory;
-        Program _module_cache;
+        Program _program;
         Thread _data_process_thread;
+        IFilter _filter;
+        public IOption Option
+        {
+            get;
+            set;
+        }
+        public IPersistance ProfilePersistance
+        {
+            get;
+            set;
+        }
 
         ITestEngineRunner _runner;
         ITestEngine _engine;
         ITestAgent _agent;
-
-        public ProfileTestRunner(ILog logger)
+        List<string> _pdb_directories;
+        public ProfileTestRunner()
         {
-            _logger = logger;
+            _engine = new TestEngine();
+        }
+        public void Load(IEnumerable<string> assemblies)
+        {
+            _filter = Filter.BuildFilter(assemblies);
+            _pdb_directories = GetPDBDirectories(assemblies);
+            StartProfilerServer();
+            TestPackage package = new TestPackage(new List<string>(assemblies));
+            _runner = CreateRunner(package);
+            _runner.Load();
+
+            
         }
 
-        bool _loaded = false;
-        public void Load(IOption option, IFilter filter, IPersistance profile_persistance)
+        private List<string> GetPDBDirectories(IEnumerable<string> assemblies)
         {
-            if(_loaded)
+            List<string> paths = new List<string>();
+            foreach(var ass in assemblies)
             {
-                return;
+                paths.Add(new System.IO.FileInfo(ass).DirectoryName);
             }
-            _filter = filter;
-            _option = option;
-            _profile_persistance = profile_persistance;
-            _builder_factory = new InstrumentationModelBuilderFactory(_option, _filter, _logger);
-            _module_cache = new Program();
-
-            StartServer();
-            _runner = CreateRunner();
-            _loaded = true;
-
+            List<string> distinct_paths = new List<string>(paths.Distinct<string>());
+            return distinct_paths;
         }
 
-        private void StartServer()
+        private void StartProfilerServer()
         {
+            //cache module
+            _program = new Program();
             _profiler_msg_dispatcher = new ProfilerMessageDispatcher();
             _profiler_msg_dispatcher.RegisterHandler(MSG_Type.MSG_TrackAssembly, TrackAssemblyHandler);
             _profiler_msg_dispatcher.RegisterHandler(MSG_Type.MSG_GetSequencePoints, GetSequencePointsHandler);
@@ -66,12 +82,26 @@ namespace NUFL.Framework.TestRunner
             _data_process_thread.Start();
         }
 
-        private ITestEngineRunner CreateRunner()
+        private ITestEngineRunner CreateRunner(TestPackage package)
         {
-            _engine = new TestEngine();
-            TestPackage package = new TestPackage(_option.TestAssemblies);
-            package.Settings.Add("ShadowCopyFiles", true);
             ServiceContext sc = (ServiceContext)_engine.Services;
+            Action<System.Collections.Specialized.StringDictionary> environment;
+            environment = (dictionary) =>
+            {
+                dictionary[@"OpenCover_Profiler_Key"] = _profiler_msg_dispatcher.MsgStreamGuid;
+                dictionary[@"OpenCover_Profiler_Namespace"] = "Local";
+                dictionary[@"OpenCover_Profiler_Threshold"] = "1";
+                dictionary["Cor_Profiler"] = "{9E0614F2-BE35-4A96-A56D-25C59F3684E2}";
+                dictionary["Cor_Enable_Profiling"] = "1";
+                dictionary["CoreClr_Profiler"] = "{9E0614F2-BE35-4A96-A56D-25C59F3684E2}";
+                dictionary["CoreClr_Enable_Profiling"] = "1";
+                dictionary["Cor_Profiler_Path"] = ProfilerRegistration.GetProfilerPath(false);
+                dictionary["OpenCover_Msg_Buffer_Guid"] = _profiler_msg_dispatcher.MsgStreamGuid;
+                dictionary["OpenCover_Msg_Buffer_Size"] = _profiler_msg_dispatcher.MsgStreamBufferSize.ToString();
+                dictionary["OpenCover_Data_Buffer_Guid"] = _profiler_msg_dispatcher.DataStream.UniqueGuid;
+                dictionary["OpenCover_Data_Buffer_Size"] = _profiler_msg_dispatcher.DataStream.BufferSize.ToString();
+                dictionary["OpenCover_Profiler_TraceByTest"] = "1";
+            };
 
             _agent = sc.TestAgency.GetAgent(
                 sc.RuntimeFrameworkSelector.SelectRuntimeFramework(package),
@@ -79,71 +109,60 @@ namespace NUFL.Framework.TestRunner
                 false,   //debug?
                 "",
                 true, //x86?
-                (dictionary) =>
-                {
-                    dictionary[@"OpenCover_Profiler_Key"] = _profiler_msg_dispatcher.MsgStreamGuid;
-                    dictionary[@"OpenCover_Profiler_Namespace"] = "Local";
-                    dictionary[@"OpenCover_Profiler_Threshold"] = "1";
-                    dictionary["Cor_Profiler"] = "{9E0614F2-BE35-4A96-A56D-25C59F3684E2}";
-                    dictionary["Cor_Enable_Profiling"] = "1";
-                    dictionary["CoreClr_Profiler"] = "{9E0614F2-BE35-4A96-A56D-25C59F3684E2}";
-                    dictionary["CoreClr_Enable_Profiling"] = "1";
-                    dictionary["Cor_Profiler_Path"] = ProfilerRegistration.GetProfilerPath(false);
-                    dictionary["OpenCover_Msg_Buffer_Guid"] = _profiler_msg_dispatcher.MsgStreamGuid;
-                    dictionary["OpenCover_Msg_Buffer_Size"] = _profiler_msg_dispatcher.MsgStreamBufferSize.ToString();
-                    dictionary["OpenCover_Data_Buffer_Guid"] = _profiler_msg_dispatcher.DataStream.UniqueGuid;
-                    dictionary["OpenCover_Data_Buffer_Size"] = _profiler_msg_dispatcher.DataStream.BufferSize.ToString();
-                    dictionary["OpenCover_Profiler_TraceByTest"] = "1";
-                });
+                environment);
             ITestEngineRunner remote_runner = _agent.CreateRunner(package);
-            remote_runner.Load();
             return remote_runner;
 
         }
 
-        public void UnLoad()
+        public void Unload()
         {
-            if(!_loaded)
-            {
-                return;
-            }
             //stop nunit
-            _runner.Unload();
-            _runner.Dispose();
-            //_agent.Stop();
-            //(_engine.Services as ServiceContext).TestAgency.WaitAgent(_agent);
-            _engine.Dispose();
-
+            try
+            {
+                _runner.Unload();
+                _runner.Dispose();
+                _agent.Stop();
+                (_engine.Services as ServiceContext).TestAgency.WaitAgent(_agent);
+            }catch(Exception e)
+            {
+                Debug.WriteLine("error trying to unload runner. " + e.Message);
+            }
+            
             //stop sever
             _profiler_msg_dispatcher.Stop();
             _profiler_msg_dispatcher.UnregisterHandler(MSG_Type.MSG_TrackAssembly, TrackAssemblyHandler);
             _profiler_msg_dispatcher.UnregisterHandler(MSG_Type.MSG_GetSequencePoints, GetSequencePointsHandler);
             _data_process_thread.Join();
             _profiler_msg_dispatcher.Dispose();
-            _loaded = false;
         }
 
-        public TestContainer RunTests(TestFilter filter)
+        ITestResultListener _listener = null;
+
+        public void RunTests(IEnumerable<string> full_qualified_names, ITestResultListener listener)
         {
-            if(_loaded)
-            {
-                var container = TestContainer.ParseFromXml(_runner.Run(this, filter).Xml);
-                _profiler_msg_dispatcher.FlushDataStream();
-                _profile_persistance.Commit(container.RunnableTestCaseCount);
-                return container;
-            }else
-            {
-                throw new Exception("Load before Run."); 
-            }
+            NameFilter filter = new NameFilter(full_qualified_names);
+            RunTests(filter, listener);
         }
 
-        public TestContainer DiscoverTests(TestFilter filter)
+        public void RunAllTests(ITestResultListener listener)
         {
-            if(_loaded)
-            {
-                return TestContainer.ParseFromXml(_runner.Explore(filter).Xml);
-            }
-            throw new Exception("Load before discover.");
+            TestFilter filter = TestFilter.Empty;
+            RunTests(filter, listener);
+        }
+
+        void RunTests(TestFilter filter, ITestResultListener listener)
+        {
+            _listener = listener;
+            var node = _runner.Run(this, filter).Xml;
+            _profiler_msg_dispatcher.FlushDataStream();
+            ProfilePersistance.Commit(int.Parse(node.Attributes["total"].Value));
+        }
+
+        public List<TestCase> DiscoverTests()
+        {
+            List<TestCase> test_cases = TestConverters.ConvertFromNUnitTestCase(_runner.Explore(TestFilter.Empty).Xml);
+            return test_cases;
         }
 
         private void ProcessCovData()
@@ -164,7 +183,7 @@ namespace NUFL.Framework.TestRunner
                     cov_data[i] = BitConverter.ToUInt32(data, offset); 
                 }
 
-                _profile_persistance.SaveCoverageData(cov_data, cov_data_size);
+                ProfilePersistance.SaveCoverageData(cov_data, cov_data_size);
 
                 //deal with remainant
                 UInt32 remain_offset = cov_data_size * 4;
@@ -178,62 +197,19 @@ namespace NUFL.Framework.TestRunner
             }
         }
 
-        private void RunNunitWithProfiler()
-        {
-            using (ITestEngine engine = new TestEngine())
-            {
-                TestPackage package = new TestPackage(_option.TestAssemblies);
-                package.Settings.Add("ShadowCopyFiles", true);
-                TestFilter filter = TestFilter.Empty;
-                ServiceContext sc = (ServiceContext)engine.Services;
-
-                ITestAgent agent = sc.TestAgency.GetAgent(
-                    sc.RuntimeFrameworkSelector.SelectRuntimeFramework(package),
-                    30000,
-                    false,   //debug?
-                    "",
-                    true, //x86?
-                    (dictionary) =>
-                    {
-                        dictionary[@"OpenCover_Profiler_Key"] = _profiler_msg_dispatcher.MsgStreamGuid;
-                        dictionary[@"OpenCover_Profiler_Namespace"] = "Local";
-                        dictionary[@"OpenCover_Profiler_Threshold"] = "1";
-                        dictionary["Cor_Profiler"] = "{9E0614F2-BE35-4A96-A56D-25C59F3684E2}";
-                        dictionary["Cor_Enable_Profiling"] = "1";
-                        dictionary["CoreClr_Profiler"] = "{9E0614F2-BE35-4A96-A56D-25C59F3684E2}";
-                        dictionary["CoreClr_Enable_Profiling"] = "1";
-                        dictionary["Cor_Profiler_Path"] = ProfilerRegistration.GetProfilerPath(false);
-                        dictionary["OpenCover_Msg_Buffer_Guid"] = _profiler_msg_dispatcher.MsgStreamGuid;
-                        dictionary["OpenCover_Msg_Buffer_Size"] = _profiler_msg_dispatcher.MsgStreamBufferSize.ToString();
-                        dictionary["OpenCover_Data_Buffer_Guid"] = _profiler_msg_dispatcher.DataStream.UniqueGuid;
-                        dictionary["OpenCover_Data_Buffer_Size"] = _profiler_msg_dispatcher.DataStream.BufferSize.ToString();
-                        dictionary["OpenCover_Profiler_TraceByTest"] = "1";
-                    });
-                using (ITestEngineRunner remote_runner = agent.CreateRunner(package))
-                {
-                    TestEngineResult result = remote_runner.Load();
-                    Debug.WriteLine("Test count {0}", remote_runner.CountTestCases(filter));
-                    remote_runner.Run(this, filter);
-                    remote_runner.Unload();
-                }
-                agent.Stop();
-                sc.TestAgency.WaitAgent(agent);
-
-            }
-        }
-
         private void TrackAssemblyHandler(object msg_obj, IPCStream msg_stream)
         {
             MSG_TrackAssembly_Request ta_req = (MSG_TrackAssembly_Request)msg_obj;
             MSG_TrackAssembly_Response response;
             //Debug.WriteLine("track " + ta_req.assemblyName);
-            var module_builder = _builder_factory.CreateModelBuilder(ta_req.modulePath, ta_req.assemblyName);
+
+            var module_builder = new InstrumentationModelBuilder(ta_req.modulePath, ta_req.assemblyName, Option, _filter, _pdb_directories);
             if(_filter.UseAssembly(ta_req.assemblyName) && module_builder.CanInstrument)
             {
                 var module = module_builder.BuildModuleModel();
                 //to do: record this module for getsequencepoints
-                _module_cache.AddModule(module);
-                _profile_persistance.PersistModule(module);
+                _program.AddModule(module);
+                ProfilePersistance.PersistModule(module);
                 response.track = true;
             } else
             {
@@ -253,8 +229,8 @@ namespace NUFL.Framework.TestRunner
         private void GetSequencePointsHandler(object msg_obj, IPCStream msg_stream)
         {
             MSG_GetSequencePoints_Request gsp_req = (MSG_GetSequencePoints_Request)msg_obj;
-            var method = _module_cache.RetrieveMethod(gsp_req.modulePath, gsp_req.functionToken);
-            if (!method.Skipped)
+            var method = _program.RetrieveMethod(gsp_req.modulePath, gsp_req.functionToken);
+            if (method != null && !method.Skipped)
             {
                 InstrumentationPoint[] points = method == null ? new InstrumentationPoint[0] : method.Points;
                 MSG_GetSequencePoints_Response gsp_resp = new MSG_GetSequencePoints_Response();
@@ -275,18 +251,33 @@ namespace NUFL.Framework.TestRunner
                 gsp_resp.count = 0;
                 ProfilerMessageDispatcher.SendMessage<MSG_GetSequencePoints_Response>(msg_stream, ref gsp_resp);
             }
-            if (method != null)
-            {
-                //Debug.WriteLine("Sending points from " + method.Name);
-            }
         }
 
 
 
         public void OnTestEvent(string report)
         {
-            _profile_persistance.PersistTestResult(report);
+            try
+            {
+                TestResult result = TestConverters.ConvertFromNUnitTestResult(report);
+                ProfilePersistance.PersistTestResult(result);
+                if(_listener != null)
+                {
+                    _listener.OnTestResult(result);
+                }
+            }
+            catch (Exception e) 
+            {
+                Debug.WriteLine(e.Message);
+            }
         }
+
+        public override void Dispose()
+        {
+            _engine.Dispose();
+            base.Dispose();
+        }
+
     }
 
 }

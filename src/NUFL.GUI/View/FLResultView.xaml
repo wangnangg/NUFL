@@ -3,15 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:nufl="clr-namespace:NUFL.GUI;assembly=NUFL.GUI"
-             xmlns:sys="clr-namespace:System;assembly=mscorlib"
-             xmlns:model="clr-namespace:NUFL.Framework.Model;assembly=NUFL.Framework"
-             mc:Ignorable="d" d:DesignWidth="300" Height="286">
+             xmlns:local="clr-namespace:NUFL.GUI.ViewModel"
+             mc:Ignorable="d">
     <UserControl.Resources>
-       
-            
-        
-        <HierarchicalDataTemplate x:Key="CovEntityTemplate" DataType="{x:Type model:ProgramEntityBase}"  ItemsSource="{Binding Path=DirectChildrenSortedByCov}">
+        <HierarchicalDataTemplate x:Key="CovEntityTemplate" DataType="{x:Type local:CovEntity}"  ItemsSource="{Binding Path=Children}">
             <StackPanel>
                 <Button>
                     <Button.Template>
@@ -23,20 +18,38 @@
                                     </Rectangle>
                                     <Rectangle Canvas.Top="10" Fill="Green" Stroke="Green" Height="10" Width="20">
                                         <Rectangle.RenderTransform>
-                                            <ScaleTransform ScaleX="{Binding CoveragePercent}"></ScaleTransform>
+                                            <ScaleTransform ScaleX="{Binding Path=Percentage}"></ScaleTransform>
                                         </Rectangle.RenderTransform>
                                     </Rectangle>
                                 </Canvas>
-                                <Label Content="{Binding Path=DisplayName}"></Label>
+                                <Label Content="{Binding Path=Name}"></Label>
                             </StackPanel>
                         </ControlTemplate>
                     </Button.Template>
                 </Button>
             </StackPanel>
         </HierarchicalDataTemplate>
-        <HierarchicalDataTemplate x:Key="SuspEntityTemplate" DataType="{x:Type model:ProgramEntityBase}"  ItemsSource="{Binding Path=DirectChildrenSortedBySusp}">
+        <HierarchicalDataTemplate x:Key="SuspEntityTemplate" DataType="{x:Type local:SuspEntity}"  ItemsSource="{Binding Path=Children}">
             <StackPanel>
-                <Button Content="{Binding DisplayName}"></Button>
+                <Button>
+                    <Button.Template>
+                        <ControlTemplate TargetType="{x:Type Button}">
+                            <StackPanel Orientation="Horizontal">
+                                <Canvas Width="20">
+                                    <Rectangle Canvas.Top="10" Fill="GreenYellow" Stroke="GreenYellow" Height="10" Width="20">
+
+                                    </Rectangle>
+                                    <Rectangle Canvas.Top="10" Fill="Green" Stroke="Green" Height="10" Width="20">
+                                        <Rectangle.RenderTransform>
+                                            <ScaleTransform ScaleX="{Binding Path=Percentage}"></ScaleTransform>
+                                        </Rectangle.RenderTransform>
+                                    </Rectangle>
+                                </Canvas>
+                                <Label Content="{Binding Path=Name}"></Label>
+                            </StackPanel>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
             </StackPanel>
         </HierarchicalDataTemplate>
     </UserControl.Resources>
@@ -54,7 +67,7 @@
             </StackPanel>
            
         </Expander>
-        <TabControl DockPanel.Dock="Top">
+        <TabControl DockPanel.Dock="Bottom">
             <TabItem  Header="Coverage">
                 <DockPanel>
                     <UniformGrid DockPanel.Dock="Top"  Rows="1" Columns="4" >
@@ -77,9 +90,5 @@
                 </DockPanel>
             </TabItem>
         </TabControl>
-
-
-
-
     </DockPanel>
 </UserControl>

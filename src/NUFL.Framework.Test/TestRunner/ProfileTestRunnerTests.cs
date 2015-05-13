@@ -12,102 +12,73 @@ using NUFL.Framework.Analysis;
 using NUFL.Framework.Model;
 using NUFL.Framework.ProfilerCommunication;
 using NUFL.Framework.TestModel;
-using NUFL.Framework.NUnitTestFilter;
+
+using NUFL.Service;
+using System.Diagnostics;
 
 namespace NUFL.Framework.Test.TestRunner
 {
     [TestFixture]
     class ProfileTestRunnerTests
     {
-        NUFLOption _option;
-        IFilter _filter;
-        ILog _logger;
-        IPersistance _persistance;
-        [SetUp]
+        string[] assemblies = new string[] { @".\MockAssembly\NUFL.TestTarget.dll" };
+        Guid guid = Guid.NewGuid();
+        RemoteRunnerFactory _runner_factory;
+        [TestFixtureSetUp]
         public void Setup()
         {
-            _option = new NUFLOption();
-            _option.TestAssemblies.Add(@".\MockAssembly\NUFL.TestTarget.dll");
-            _option.TargetDir = @".\MockAssembly";
-            _option.ProfileFilters.Add("+[NUFL*]*");
+            _runner_factory.Key = "test";
+            _runner_factory = (RemoteRunnerFactory)ServiceManager.Instance.GetService(typeof(ITestRunnerFactory), "test");
 
-            _filter = Filter.BuildFilter(_option.ProfileFilters, false);
-            _logger = LogManager.GetLogger("test");
-            
-            _persistance = new FaultLocator();
-            
-  
-           
+            NUFLOption option = new NUFLOption();
+            option.FLMethod = "op1";
+            option.Filters = new List<string>() { "+[NUFL*]*" };
+            Service.ServiceManager.Instance.RegisterGlobalInstanceService(typeof(IOption), option, "test");
+        }
+
+        [TestFixtureTearDown]
+        public void TearDown()
+        {
         }
         [Test]
         public void ProfileTestRunnerSmoke()
         {
-            var _test_runner = new ProfileTestRunner(_logger);
-            _test_runner.Load(_option, _filter, _persistance);
-            _test_runner.UnLoad();
-            _test_runner.Load(_option, _filter, _persistance);
-            _test_runner.UnLoad();
-            _test_runner.Load(_option, _filter, _persistance);
-            _test_runner.UnLoad();
-            
-           
-        }
-        [Test]
-        public void ProfileTestRunnerRun()
-        {
-            var _test_runner = new ProfileTestRunner(_logger);
-            _test_runner.Load(_option, _filter, _persistance);
-            var container = _test_runner.RunTests(NUnit.Engine.TestFilter.Empty);
-            _test_runner.UnLoad();
-            foreach (var test_case in container.GetTestCaseEnumerator())
+            using (var _test_runner = _runner_factory.CreateExecutor())
             {
-                System.Diagnostics.Debug.WriteLine("{0}:{1}",test_case.FullName, test_case.Result);
-            }
-           
-        }
-
-        [TestCase(1)]
-        [TestCase(3)]
-        [TestCase(5)]
-        public void ProfileTestRunnerFilterRun(int count)
-        {
-            var _test_runner = new ProfileTestRunner(_logger);
-            _test_runner.Load(_option, _filter, _persistance);
-            var discover_result = _test_runner.DiscoverTests(NUnit.Engine.TestFilter.Empty);
-            List<int> test_ids = new List<int>();
-            foreach (var test_case in discover_result.GetTestCaseEnumerator())
-            {
-                test_ids.Add(test_case.Id);
-                count--;
-                if (count == 0)
-                    break;
-            }
-            IdFilter test_filter = new IdFilter(test_ids);
-            var container = _test_runner.RunTests(test_filter);
-            _test_runner.UnLoad();
-            foreach (var test_case in container.GetTestCaseEnumerator())
-            {
-                System.Diagnostics.Debug.WriteLine("{0}:{1}", test_case.FullName, test_case.Result);
+                _test_runner.Load(assemblies);
+                _test_runner.Unload();
+                _test_runner.Load(assemblies);
+                _test_runner.Unload();
+                _test_runner.Load(assemblies);
+                _test_runner.Unload();
+                _test_runner.Dispose();
             }
 
         }
         [Test]
-        public void ProfileTestRunnerDiscover()
+        public void ProfileTestRunnerRuntests()
         {
-            var _test_runner = new ProfileTestRunner(_logger);
-            _test_runner.Load(_option, _filter, _persistance);
-            var container = _test_runner.DiscoverTests(NUnit.Engine.TestFilter.Empty);
-            _test_runner.UnLoad();
-            foreach(var test_case in container.GetTestCaseEnumerator())
+            using (var _test_runner = _runner_factory.CreateExecutor())
             {
-                System.Diagnostics.Debug.WriteLine(test_case.FullName);
+                _test_runner.Load(assemblies);
+                _test_runner.RunAllTests(new Listener());
+                _test_runner.Unload();
             }
-            
+        
         }
 
-        [TearDown]
-        public void TearDown()
+        class Listener:MarshalByRefObject,ITestResultListener
         {
+            
+            public void OnTestResult(TestResult result)
+            {
+                Debug.WriteLine(result.FullyQualifiedName);
+                Debug.WriteLine(result.Outcome.ToString());
+                Debug.WriteLine(result.ErrorMessage);
+                Debug.WriteLine(result.StackTrace);
+                Debug.WriteLine(result.Duration.Milliseconds);
+            }
         }
+
     }
 }

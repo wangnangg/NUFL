@@ -399,5 +399,31 @@ namespace NUFL.Framework.Setting
 
             return filter;
         }
+
+        public static IFilter BuildFilter(IEnumerable<string> assemblies)
+        {
+            var filter = new Filter();
+
+
+            filter.AddFilter("-[mscorlib]*");
+            filter.AddFilter("-[mscorlib.*]*");
+            filter.AddFilter("-[System]*");
+            filter.AddFilter("-[System.*]*");
+            filter.AddFilter("-[Microsoft.VisualBasic]*");
+            filter.AddFilter("-[nunit*]*");
+            
+            foreach(var assembly in assemblies)
+            {
+                filter.AddFilter("+[" + GetModuleName(assembly) + "]*"); 
+            }
+
+            return filter;
+        }
+
+        static string GetModuleName(string path)
+        {
+            var info = new System.IO.FileInfo(path);
+            return System.IO.Path.GetFileNameWithoutExtension(info.Name);
+        }
     }
 }

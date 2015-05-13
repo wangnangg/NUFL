@@ -12,27 +12,25 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-
+using NUFL.Server;
 namespace NUFL.GUI.View
 {
     /// <summary>
     /// Interaction logic for FLResultView.xaml
     /// </summary>
-    public partial class FLResultView : UserControl
+    public partial class FLResultView : UserControl,IDisposable
     {
+        Guid guid = Guid.NewGuid();
         public FLResultView()
         {
             InitializeComponent();
         }
 
-        private void RadioButton_Checked(object sender, RoutedEventArgs e)
-        {
 
-        }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+
+        public void Dispose()
         {
-            System.Diagnostics.Debug.WriteLine("hehe");
         }
     }
 }

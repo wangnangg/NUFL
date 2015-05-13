@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using NUFL.Framework.Symbol;
 using NUFL.Framework.Model;
 using NUFL.Framework.ProfilerCommunication;
+using System;
+using NUFL.Service;
 namespace NUFL.Framework.Setting
 {
     /// <summary>
@@ -26,9 +28,13 @@ namespace NUFL.Framework.Setting
 
         bool SkipAutoImplementedProperties { get; }
 
+        List<string> Filters { get; }
+
+        string FLMethod { get; }
+
     }
 
-    public class NUFLOption:IOption
+    public class NUFLOption : GlobalInstanceServiceBase, IOption
     {
         public NUFLOption()
         {
@@ -54,11 +60,18 @@ namespace NUFL.Framework.Setting
         }
 
 
-
+        public string FLMethod { set; get; }
 
         public bool SkipAutoImplementedProperties
         {
             get { return true; }
+        }
+
+
+        public List<string> Filters
+        {
+            set;
+            get;
         }
     }
 }

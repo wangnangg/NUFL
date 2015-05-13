@@ -26,3 +26,4 @@ E:\workplace\NUFL\src\NUFL.GUI\obj\Debug\View\FLResultView.g.cs
 E:\workplace\NUFL\bin\Debug\NUFL.GUI.dll
 E:\workplace\NUFL\bin\Debug\NUFL.GUI.pdb
 E:\workplace\NUFL\bin\Debug\NUFL.GUI.dll.config
+E:\workplace\NUFL\src\NUFL.GUI\obj\Debug\GeneratedInternalTypeHelper.g.cs

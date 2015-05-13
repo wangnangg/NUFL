@@ -5,13 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using NUFL.Framework.Model;
 using NUFL.Framework.ProfilerCommunication;
-
+using NUFL.Framework.TestModel;
 namespace NUFL.Framework.Persistance
 {
     public interface IPersistance
     {
         void PersistModule(Module module);
-        void PersistTestResult(string xml_result);
+        void PersistTestResult(TestResult result);
         void SaveCoverageData(UInt32[] data, UInt32 length);
         void Commit(int result_count);
     }

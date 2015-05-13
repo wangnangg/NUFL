@@ -9,9 +9,11 @@ namespace NUFL.Framework.Model
     public class Program : ProgramEntityBase
     {
         List<Module> _modules;
+        List<InstrumentationPoint> _points;
         public Program()
         {
             _modules = new List<Module>();
+            _points = new List<InstrumentationPoint>(8192);
         }
         public void AddModule(Module module)
         {

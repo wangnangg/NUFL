@@ -17,7 +17,6 @@ namespace NUFL.Framework.Test.Model
         NUFLOption _option;
         IFilter _filter;
         ILog _logger;
-        InstrumentationModelBuilderFactory _module_builder_factory;
         IInstrumentationModelBuilder _module_builder;
         [SetUp]
         public void Setup()
@@ -26,16 +25,29 @@ namespace NUFL.Framework.Test.Model
             _option.TestAssemblies.Add(@".\MockAssembly\NUFL.TestTarget.dll");
             _option.TargetDir = @".\MockAssembly";
             _option.ProfileFilters.Add("+[*]*");
-            _filter = Filter.BuildFilter(_option.ProfileFilters, false);
+            _filter = Filter.BuildFilter(new List<string>(){@".\MockAssembly\NUFL.TestTarget.dll"});
             _logger = LogManager.GetLogger("test");
-            _module_builder_factory = new InstrumentationModelBuilderFactory(_option, _filter, _logger);
-            _module_builder = _module_builder_factory.CreateModelBuilder(".\\NUFL.TestTarget.dll", "NUFL.TestTarget");
+            _module_builder = new InstrumentationModelBuilder(@".\MockAssembly\NUFL.TestTarget.dll", "NUFL.TestTarget", _option, _filter, new List<string>());
         }
         [Test]
         public void ModuleBuilderSmokeTest()
         {
             Module module = _module_builder.BuildModuleModel();
             Assert.IsNotEmpty(module.Classes);
+        }
+        [Test]
+        public void ModuleBuilderFileTest()
+        {
+            Module module = _module_builder.BuildModuleModel();
+            foreach(var key in SourceFile.FileDict.Keys)
+            {
+                SourceFile file = SourceFile.GetSourceFile(key);
+                Console.WriteLine(file.FullName);
+                foreach(var method in file.Methods)
+                {
+                    Console.WriteLine(method.Name);
+                }
+            }
         }
     }
 }

@@ -7,14 +7,13 @@ DWORD WINAPI FlusherThread(PVOID pvParam)
 	HANDLE handles[2];
 	handles[0] = host->data_flush;
 	handles[1] = host->flush_thread_terminate;
+	ATLTRACE("flush_thread: wating for flushing command.");
 	DWORD wait_result = WaitForMultipleObjects(2, handles, false, INFINITE);
-	while (wait_result != 1)
+	while (wait_result == 0)
 	{
-		if (wait_result == 0) //flush
-		{
-			host->FlushCovData();
-			SetEvent(host->data_flushed);
-		}
+		ATLTRACE("flush_thread: flush command received.");
+		host->FlushCovData();
+		SetEvent(host->data_flushed);
 		wait_result = WaitForMultipleObjects(2, handles, false, INFINITE);
 	}
 

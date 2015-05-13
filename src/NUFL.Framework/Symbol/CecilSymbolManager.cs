@@ -22,15 +22,15 @@ namespace NUFL.Framework.Symbol
         private const int StepOverLineCode = 0xFEEFEE;
         private readonly IOption _commandLine;
         private readonly IFilter _filter;
-        private readonly ILog _logger;
         private AssemblyDefinition _sourceAssembly;
         private readonly Dictionary<int, MethodDefinition> _methodMap = new Dictionary<int, MethodDefinition>();
+        private readonly IEnumerable<string> _pdb_directories;
 
-        public CecilSymbolManager(IOption commandLine, IFilter filter, ILog logger)
+        public CecilSymbolManager(IOption commandLine, IFilter filter, IEnumerable<string> pdb_directories)
         {
             _commandLine = commandLine;
             _filter = filter;
-            _logger = logger;
+            _pdb_directories = pdb_directories;
         }
 
         public string ModulePath { get; private set; }
@@ -46,7 +46,14 @@ namespace NUFL.Framework.Symbol
         private SymbolFolder FindSymbolsFolder()
         {
             var origFolder = Path.GetDirectoryName(ModulePath);
-
+            foreach(var dir in _pdb_directories)
+            {
+                var sym_folder = FindSymbolsFolder(ModulePath, dir);
+                if(sym_folder != null)
+                {
+                    return sym_folder;
+                }
+            }
             return FindSymbolsFolder(ModulePath, origFolder) ?? FindSymbolsFolder(ModulePath, _commandLine.TargetDir) ?? FindSymbolsFolder(ModulePath, Environment.CurrentDirectory);
         }
 
@@ -109,13 +116,6 @@ namespace NUFL.Framework.Symbol
                     {
                         Environment.CurrentDirectory = currentPath;
                     }
-                    if (_sourceAssembly == null)
-                    {
-                        if (_logger.IsDebugEnabled)
-                        {
-                            _logger.DebugFormat("Cannot instrument {0} as no PDB/MDB could be loaded", ModulePath);
-                        }
-                    }
                 }
                 return _sourceAssembly;
             }
@@ -169,17 +169,15 @@ namespace NUFL.Framework.Symbol
                         }
                     }
                 }
-                loop_out:
+            loop_out:
 
                 
 
                 // only instrument types that are not structs and have instrumentable points
-                if (!typeDefinition.IsValueType || filepath != null)
+                if (!typeDefinition.IsValueType && filepath != null)
                 {
-                    @class.SourcePosition = new Position();
-                    @class.SourcePosition.SourceFile = filepath;
-                    @class.SourcePosition.StartLine = start_line;
-                    @class.SourcePosition.StartColumn = start_col;
+                    SourceFile file = SourceFile.GetSourceFile(filepath);
+                    @class.SourcePosition = new Position(file, start_line, start_col, 0, 0);
                     classes.Add(@class);
                 }
                 if (typeDefinition.HasNestedTypes)
@@ -282,9 +280,9 @@ namespace NUFL.Framework.Symbol
                 {
                     if (instruction.SequencePoint != null)
                     {
-                        method.SourcePosition.SourceFile = instruction.SequencePoint.Document.Url;
-                        method.SourcePosition.StartLine = instruction.SequencePoint.StartLine;
-                        method.SourcePosition.StartColumn = instruction.SequencePoint.StartColumn;
+                        SourceFile file = SourceFile.GetSourceFile(instruction.SequencePoint.Document.Url);
+                        method.SourcePosition = new Position(file, instruction.SequencePoint.StartLine, instruction.SequencePoint.StartColumn, 0, 0);
+                        file.Methods.Add(method);
                         return method;
                     }
                 }
@@ -340,15 +338,24 @@ namespace NUFL.Framework.Symbol
             var methodDefinition = GetMethodDefinition(token);
             if (methodDefinition == null) return;
             UInt32 ordinal = 0;
-            list.AddRange(from instruction in methodDefinition.Body.Instructions
-                          where instruction.SequencePoint != null && instruction.SequencePoint.StartLine != StepOverLineCode
-                          let sp = instruction.SequencePoint
-                          select new InstrumentationPoint 
-                          {
-                              Offset = instruction.Offset,
-                              Ordinal = ordinal++,
-                              SourcePosition = new Position(sp.Document.Url, sp.StartLine, sp.StartColumn)
-                          });
+            var first_instruction = methodDefinition.Body.Instructions.FirstOrDefault();
+            SourceFile file = null;
+            if(first_instruction != null)
+            {
+                file = SourceFile.GetSourceFile(first_instruction.SequencePoint.Document.Url);
+            }
+            foreach(var instruction in methodDefinition.Body.Instructions)
+            {
+                if(instruction.SequencePoint != null && instruction.SequencePoint.StartLine != StepOverLineCode)
+                {
+                    var sp = instruction.SequencePoint;
+                    var ip = new InstrumentationPoint();
+                    ip.Offset = instruction.Offset;
+                    ip.Ordinal = ordinal++;
+                    ip.SourcePosition = new Position(file, sp.StartLine, sp.StartColumn, sp.EndLine, sp.EndColumn);
+                    list.Add(ip);
+                }
+            }
         }
 
         private static bool BranchIsInGeneratedFinallyBlock(Instruction branchInstruction, MethodDefinition methodDefinition)

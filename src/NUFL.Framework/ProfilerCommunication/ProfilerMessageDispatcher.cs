@@ -115,7 +115,8 @@ namespace NUFL.Framework.ProfilerCommunication
                 catch (Exception ex)
                 {
                     Debug.WriteLine("Message handler exception: {0}", ex.ToString());
-                    return;
+                    throw new Exception("Critical Error: Message handle throws a exception"); 
+                    
                 }
             }
         }

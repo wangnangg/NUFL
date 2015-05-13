@@ -21,6 +21,7 @@ namespace NUFL.Service
             props.Add("port", port);
             props.Add("name", name);
             props.Add("bindTo", "127.0.0.1");
+            //props.Add("timeout", 20);
 
             BinaryServerFormatterSinkProvider serverProvider =
                 new BinaryServerFormatterSinkProvider();
@@ -38,7 +39,6 @@ namespace NUFL.Service
 
             BinaryClientFormatterSinkProvider clientProvider =
                 new BinaryClientFormatterSinkProvider();
-
             return new TcpChannel(props, clientProvider, serverProvider);
         }
 
@@ -60,6 +60,19 @@ namespace NUFL.Service
             return GetTcpChannel(name, port, 2);
         }
 
+
+        // a nameless channel
+        public static TcpChannel GetTcpChannel(int port, int limit)
+        {
+            return GetTcpChannel(Guid.NewGuid().ToString(), port, limit);
+        }
+        //nameless, we cares litte about the port
+        public static TcpChannel GetTcpChannel(int limit)
+        {
+            return GetTcpChannel(Guid.NewGuid().ToString(), 0, limit);
+        }
+
+
         /// <summary>
         /// Get a channel by name, casting it to a TcpChannel.
         /// Otherwise, create, register and return a TcpChannel with
@@ -73,22 +86,18 @@ namespace NUFL.Service
         {
             TcpChannel channel = ChannelServices.GetChannel(name) as TcpChannel;
 
-            if (channel == null)
+           if (channel == null)
             {
-                // NOTE: Retries are normally only needed when rapidly creating
-                // and destroying channels, as in running the NUnit tests.
-                int retries = 10;
-                while (--retries > 0)
-                    try
-                    {
-                        channel = CreateTcpChannel(name, port, limit);
-                        ChannelServices.RegisterChannel(channel, false);
-                        break;
-                    }
-                    catch (Exception e)
-                    {
-                        System.Threading.Thread.Sleep(300);
-                    }
+                
+                try
+                {
+                    channel = CreateTcpChannel(name, port, limit);
+                    ChannelServices.RegisterChannel(channel, false);
+
+                } catch(Exception)
+                {
+                    channel = null;
+                }
             }
 
             return channel;

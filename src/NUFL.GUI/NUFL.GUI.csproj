@@ -31,6 +31,12 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>Key.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -51,12 +57,13 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Model\FLResultPresentService.cs" />
+    <Compile Include="Model\FLResultPresenter.cs" />
     <Compile Include="Service References\FLResultPresentationServiceReference\Reference.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Compile>
+    <Compile Include="ViewModel\CovEntity.cs" />
     <Compile Include="ViewModel\FLResultViewModel.cs" />
     <Page Include="View\FLResultView.xaml">
       <SubType>Designer</SubType>
@@ -66,12 +73,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Compile Include="ImageTextTreeView.cs">
-      <SubType>Code</SubType>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ViewModel\ProgramEntity.cs" />
+    <Compile Include="ViewModel\SuspEntity.cs" />
     <Compile Include="View\FLResultView.xaml.cs">
       <DependentUpon>FLResultView.xaml</DependentUpon>
     </Compile>
@@ -93,6 +97,7 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <None Include="app.config" />
+    <None Include="Key.snk" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -112,6 +117,10 @@
     <ProjectReference Include="..\NUFL.LocalService\NUFL.Service.csproj">
       <Project>{be123b92-605a-462f-bfb7-5403f0979f67}</Project>
       <Name>NUFL.Service</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NUFL.Server\NUFL.Server.csproj">
+      <Project>{8e94badf-619d-4a98-be9e-847afb0a9f74}</Project>
+      <Name>NUFL.Server</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

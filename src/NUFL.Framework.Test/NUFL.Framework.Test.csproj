@@ -48,14 +48,13 @@
   <ItemGroup>
     <Compile Include="Analysis\FaultLocatorTests.cs" />
     <Compile Include="Model\InstrumentationModuleBuilderTests.cs" />
-    <Compile Include="NUnitTestFilter\IdFilterTests.cs" />
     <Compile Include="ProfilerCommunication\IPCStreamTests.cs" />
     <Compile Include="ProfilerCommunication\ProfilerMessageDispatcherTests.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TestModel\TestCaseTests.cs" />
-    <Compile Include="TestModel\TestContainerTests.cs" />
+    <Compile Include="TestModel\TestConverterTests.cs" />
+    <Compile Include="TestRunner\NunitFilterTests.cs" />
     <Compile Include="TestRunner\ProfileTestRunnerTests.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -70,6 +69,10 @@
     <ProjectReference Include="..\NUFL.LocalService\NUFL.Service.csproj">
       <Project>{be123b92-605a-462f-bfb7-5403f0979f67}</Project>
       <Name>NUFL.Service</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NUFL.Server\NUFL.Server.csproj">
+      <Project>{8e94badf-619d-4a98-be9e-847afb0a9f74}</Project>
+      <Name>NUFL.Server</Name>
     </ProjectReference>
     <ProjectReference Include="..\NUnit.Engine\nunit.engine.api\nunit.engine.api.csproj">
       <Project>{775fad50-3623-4922-97c4-dfb29a8be4c7}</Project>

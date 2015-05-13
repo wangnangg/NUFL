@@ -25,7 +25,6 @@ using NUFL.Framework.Analysis;
 using NUFL.Framework.Model;
 using NUFL.Framework.ProfilerCommunication;
 using NUFL.Framework.TestModel;
-using NUFL.Framework.NUnitTestFilter;
 using NUnit.Engine;
 using System.Threading;
 using NUFL.GUI.Model;
@@ -38,23 +37,20 @@ namespace NUFL.GUI.Test
     /// </summary>
     public partial class MainWindow : Window
     {
-
-        NUFLOption _option;
-        IFilter _filter;
-        ILog _logger;
-        IFaultLocator _fault_locator;
-        IPersistance _persistance;
-        ProfileTestRunner _test_runner;
+        FLResultPresenter presenter = new FLResultPresenter();
+        FLResultViewModel view_model = new FLResultViewModel();
+        NUFLOption option;
         public void Setup()
         {
-            _option = new NUFLOption();
-            _option.TestAssemblies.Add(@".\MockAssembly\NUFL.TestTarget.dll");
-            _option.TargetDir = @".\MockAssembly";
-            _option.ProfileFilters.Add("+[NUFL*]*");
-            _filter = Filter.BuildFilter(_option.ProfileFilters, false);
-            _logger = LogManager.GetLogger("test");
-            _test_runner = new ProfileTestRunner(_logger);
-          
+            _result_view.DataContext = view_model;
+            option = new NUFLOption();
+            option.FLMethod = "op1";
+            option.Filters = new List<string>() { "+[*]*" };
+            presenter.ViewModel = view_model;
+           // ServiceManager.Instance.RegisterGlobalInstanceService(typeof(IOption), option, "");
+            //ServiceManager.Instance.RegisterGlobalInstanceService(typeof(IFLResultPresenter), presenter, "");  
+            ServiceManager.Instance.RegisterGlobalInstanceService(typeof(IOption), option, "test");
+            ServiceManager.Instance.RegisterGlobalInstanceService(typeof(IFLResultPresenter), presenter, "test");  
 
 
 
@@ -66,32 +62,9 @@ namespace NUFL.GUI.Test
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            ThreadStart ts = new ThreadStart(worker);
-            Thread tr = new Thread(ts);
-            tr.Start();
-
-            FLResultPresentService service = new FLResultPresentService(this.Dispatcher);
-            ServiceManager mgr = new ServiceManager(3245);
-            mgr.ProvideGlobalService(typeof(IFLResultPresenter), service);
-            mgr.Start();
-            _result_view.DataContext = service.ViewModel;
-
-        }
-        void worker()
-        {
             Setup();
-            _persistance = new FaultLocator();
-            _fault_locator = (IFaultLocator)_persistance;
-            _test_runner.Load(_option, _filter, _persistance);
-            _test_runner.RunTests(NUnit.Engine.TestFilter.Empty);
-            var list = _fault_locator.GetRankList((x) => { return true; }, "op1");
-            _test_runner.UnLoad();
-            ServiceManager mgr = new ServiceManager(0);
-            mgr.RequireService(typeof(IFLResultPresenter), 3245);
-            mgr.Start();
-            IFLResultPresenter presenter = mgr.GetService(typeof(IFLResultPresenter)) as IFLResultPresenter;
-            presenter.Present(list);
         }
+       
 
 
     }

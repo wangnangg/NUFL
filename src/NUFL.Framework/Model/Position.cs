@@ -12,38 +12,22 @@ namespace NUFL.Framework.Model
         {
 
         }
-        public Position(string filepath, int startline, int startcol)
+        public Position(SourceFile file, int startline, int startcol, int endline, int endcol)
         {
-            SourceFile = filepath;
+            SourceFile = file;
             StartLine = startline;
             StartColumn = startcol;
+            EndLine = endline;
+            EndColumn = endcol;
         }
-        private static List<string> Files = new List<string>();
-        public static int GetFileId(string filename)
+        public SourceFile SourceFile
         {
-            if(Files.Contains(filename))
-            {
-                return Files.IndexOf(filename);
-            }
-
-            Files.Add(filename);
-            return Files.Count - 1;
-        }
-        private int _file_id;
-        private int _start_line;
-        private int _start_column;
-        public string SourceFile 
-        {
-            get
-            {
-                return Files[_file_id];
-            }
-            set
-            {
-                _file_id = GetFileId(value);
-            }
+            get;
+            set;
         }
         public int StartLine { get; set; }
         public int StartColumn { get; set; }
+        public int EndLine { get; set; }
+        public int EndColumn { get; set; }
     }
 }

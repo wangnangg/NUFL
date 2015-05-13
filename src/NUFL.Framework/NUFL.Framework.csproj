@@ -29,6 +29,12 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>Key.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
@@ -54,6 +60,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Analysis\IFLResultPresenter.cs" />
+    <Compile Include="Analysis\TestCase.cs" />
     <Compile Include="Model\ProgramEntityBase.cs" />
     <Compile Include="Analysis\RankList.cs" />
     <Compile Include="Model\Program.cs" />
@@ -62,8 +70,8 @@
     <Compile Include="Analysis\FaultLocator.cs" />
     <Compile Include="HelperExtensions.cs" />
     <Compile Include="Analysis\FormulaFactory.cs" />
-    <Compile Include="Analysis\IFaultLocator.cs" />
-    <Compile Include="NUnitTestFilter\IdFilter.cs" />
+    <Compile Include="Model\SourceFile.cs" />
+    <Compile Include="TestRunner\NameFilter.cs" />
     <Compile Include="Persistance\IPersistance.cs" />
     <Compile Include="ProfilerCommunication\ProfilerRegistration.cs">
       <SubType>Code</SubType>
@@ -73,9 +81,7 @@
     <Compile Include="Symbol\SymbolFolder.cs" />
     <Compile Include="Model\Class.cs" />
     <Compile Include="Model\IInstrumentationModelBuilder.cs" />
-    <Compile Include="Model\IInstrumentationModelBuilderFactory.cs" />
     <Compile Include="Model\InstrumentationModelBuilder.cs" />
-    <Compile Include="Model\InstrumentationModelBuilderFactory.cs" />
     <Compile Include="Model\InstrumentationPoint.cs" />
     <Compile Include="Model\Method.cs" />
     <Compile Include="Model\Module.cs" />
@@ -87,15 +93,30 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Symbol\NUnitTestInvokerFinder.cs" />
     <Compile Include="TestModel\TestCase.cs" />
+    <Compile Include="TestModel\TestCaseConventer.cs" />
     <Compile Include="TestModel\TestContainer.cs" />
+    <Compile Include="TestModel\TestResult.cs" />
+    <Compile Include="TestRunner\ITestDiscoverer.cs" />
+    <Compile Include="TestRunner\ITestExectuor.cs" />
+    <Compile Include="TestRunner\ITestResultListener.cs" />
+    <Compile Include="TestRunner\ITestRunnerFactory.cs" />
+    <Compile Include="TestRunner\SimpleRunnerFactory.cs" />
+    <Compile Include="TestRunner\SimpleTestRunner.cs" />
     <Compile Include="TestRunner\ProfileTestRunner.cs" />
+    <Compile Include="TestRunner\RemoteRunnerBase.cs" />
+    <Compile Include="TestRunner\RemoteRunnerFactory.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Key.snk" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\NUFL.LocalService\NUFL.Service.csproj">
+      <Project>{be123b92-605a-462f-bfb7-5403f0979f67}</Project>
+      <Name>NUFL.Service</Name>
+    </ProjectReference>
     <ProjectReference Include="..\NUnit.Engine\nunit.engine.api\nunit.engine.api.csproj">
       <Project>{775fad50-3623-4922-97c4-dfb29a8be4c7}</Project>
       <Name>nunit.engine.api</Name>
@@ -104,9 +125,6 @@
       <Project>{372a3447-d657-40ff-a089-77c19fec30c8}</Project>
       <Name>nunit.engine</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

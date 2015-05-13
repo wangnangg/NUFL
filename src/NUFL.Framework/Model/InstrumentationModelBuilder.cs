@@ -8,20 +8,23 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using NUFL.Framework.Symbol;
+using NUFL.Framework.Setting;
+using System.Collections.Generic;
 
 namespace NUFL.Framework.Model
 {
     public class InstrumentationModelBuilder : IInstrumentationModelBuilder
     {
-        private readonly ISymbolManager _symbolManager;
+        private readonly CecilSymbolManager _symbolManager;
 
         /// <summary>
         /// Standard constructor
         /// </summary>
         /// <param name="symbolManager">the symbol manager that will provide the data</param>
-        public InstrumentationModelBuilder(ISymbolManager symbolManager)
+        public InstrumentationModelBuilder(string module_path, string module_name, IOption option, IFilter filter, IEnumerable<string> pdb_directories)
         {
-            _symbolManager = symbolManager;
+            _symbolManager = new CecilSymbolManager(option, filter, pdb_directories);
+            _symbolManager.Initialise(module_path, module_name);
         }
 
         public Module BuildModuleModel()

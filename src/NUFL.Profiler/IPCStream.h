@@ -324,11 +324,6 @@ public:
 
 	void Flush()
 	{
-		if (_write_stream.GetPostion() == 0)
-		{
-			//nothing to flush.
-			return;
-		}
 		UINT32* first_four_bytes = (UINT32*)_view_of_write_buff;
 		*first_four_bytes = _write_stream.GetPostion();
 		//rewind write stream

@@ -1,0 +1,58 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NUFL.VisualStudioExtension", "NUFL.VisualStudioExtension\NUFL.VisualStudioExtension.csproj", "{ED315C06-A4E8-4F24-8C0D-60A1125D06FE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NUFL.GUI", "NUFL.GUI\NUFL.GUI.csproj", "{690B0A89-DCA3-4FDB-8E61-4FF3BB0FB5A4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NUFL.Framework", "NUFL.Framework\NUFL.Framework.csproj", "{6B01B019-0D29-415B-B9B2-C1BE22826C0B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NUFL.Service", "NUFL.LocalService\NUFL.Service.csproj", "{BE123B92-605A-462F-BFB7-5403F0979F67}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NUnit.Engine", "NUnit.Engine", "{CBCCA72B-E3C2-43CC-BEE6-9EEEE3AA3AB0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nunit.engine", "NUnit.Engine\nunit.engine\nunit.engine.csproj", "{372A3447-D657-40FF-A089-77C19FEC30C8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nunit.engine.api", "NUnit.Engine\nunit.engine.api\nunit.engine.api.csproj", "{775FAD50-3623-4922-97C4-DFB29A8BE4C7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{ED315C06-A4E8-4F24-8C0D-60A1125D06FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED315C06-A4E8-4F24-8C0D-60A1125D06FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED315C06-A4E8-4F24-8C0D-60A1125D06FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED315C06-A4E8-4F24-8C0D-60A1125D06FE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{690B0A89-DCA3-4FDB-8E61-4FF3BB0FB5A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{690B0A89-DCA3-4FDB-8E61-4FF3BB0FB5A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{690B0A89-DCA3-4FDB-8E61-4FF3BB0FB5A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{690B0A89-DCA3-4FDB-8E61-4FF3BB0FB5A4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B01B019-0D29-415B-B9B2-C1BE22826C0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B01B019-0D29-415B-B9B2-C1BE22826C0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B01B019-0D29-415B-B9B2-C1BE22826C0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B01B019-0D29-415B-B9B2-C1BE22826C0B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BE123B92-605A-462F-BFB7-5403F0979F67}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE123B92-605A-462F-BFB7-5403F0979F67}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE123B92-605A-462F-BFB7-5403F0979F67}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE123B92-605A-462F-BFB7-5403F0979F67}.Release|Any CPU.Build.0 = Release|Any CPU
+		{372A3447-D657-40FF-A089-77C19FEC30C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{372A3447-D657-40FF-A089-77C19FEC30C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{372A3447-D657-40FF-A089-77C19FEC30C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{372A3447-D657-40FF-A089-77C19FEC30C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{775FAD50-3623-4922-97C4-DFB29A8BE4C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{775FAD50-3623-4922-97C4-DFB29A8BE4C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{775FAD50-3623-4922-97C4-DFB29A8BE4C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{775FAD50-3623-4922-97C4-DFB29A8BE4C7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{372A3447-D657-40FF-A089-77C19FEC30C8} = {CBCCA72B-E3C2-43CC-BEE6-9EEEE3AA3AB0}
+		{775FAD50-3623-4922-97C4-DFB29A8BE4C7} = {CBCCA72B-E3C2-43CC-BEE6-9EEEE3AA3AB0}
+	EndGlobalSection
+EndGlobal

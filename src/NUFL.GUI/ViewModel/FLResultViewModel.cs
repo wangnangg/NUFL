@@ -35,37 +35,48 @@ namespace NUFL.GUI.ViewModel
             SuspMethodChecked = true;
         }
 
-        public List<ProgramEntityBase> CovResult
+
+        public IEnumerable<CovEntity> CovResult
         {
             get
             {
                 if (DataSource == null)
                 {
-                    return null;
+                    yield break;
                 }
                 Type gran = GetCovGranularity();
                 if (gran == null)
                 {
-                    return null;
+                    yield break;
                 }
-                return DataSource.GetCovList(gran);
+                foreach (var item in DataSource.GetCovList(gran))
+                {
+                    yield return new CovEntity(item);
+                }
+                yield break;
             }
         }
 
-        public List<ProgramEntityBase> SuspResult
+
+
+        public IEnumerable<SuspEntity> SuspResult
         {
             get
             {
                 if (DataSource == null)
                 {
-                    return null;
+                    yield break;
                 }
                 Type gran = GetSuspGranularity();
                 if (gran == null)
                 {
-                    return null;
+                    yield break;
                 }
-                return DataSource.GetSuspList(gran);
+                foreach(var item in DataSource.GetSuspList(gran))
+                {
+                    yield return new SuspEntity(item);
+                }
+                yield break;
             }
         }
 
