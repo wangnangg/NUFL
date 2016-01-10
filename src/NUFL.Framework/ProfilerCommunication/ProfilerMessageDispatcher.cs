@@ -14,15 +14,17 @@ namespace NUFL.Framework.ProfilerCommunication
         Thread _worker;
         Action<object, IPCStream>[] _handlers;
         AutoResetEvent _stopped_event;
-        EventWaitHandle _data_flush;
-        EventWaitHandle _data_flushed;
+        EventWaitHandle _task_finish;
+        EventWaitHandle _task_finished;
+        EventWaitHandle _profiler_finished;
         public ProfilerMessageDispatcher()
         {
             _msg_stream = new IPCStream(16 * 1024);
             _data_stream = new IPCStream(256 * 1024);
             _stopped_event = new AutoResetEvent(false);
-            _data_flush = new EventWaitHandle(false, EventResetMode.AutoReset, "DataFlush#" + _data_stream.UniqueGuid);
-            _data_flushed = new EventWaitHandle(false, EventResetMode.AutoReset, "DataFlushed#" + _data_stream.UniqueGuid);
+            _task_finish = new EventWaitHandle(false, EventResetMode.AutoReset, "DataFlush#" + _data_stream.UniqueGuid);
+            _task_finished = new EventWaitHandle(false, EventResetMode.AutoReset, "DataFlushed#" + _data_stream.UniqueGuid);
+            _profiler_finished = new EventWaitHandle(false, EventResetMode.AutoReset, "ProfilerFinished#" + _data_stream.UniqueGuid);
             //there will never be more than ten kinds of messages.
             _handlers = new Action<object, IPCStream>[10];
 
@@ -56,6 +58,8 @@ namespace NUFL.Framework.ProfilerCommunication
         }
         public void Stop()
         {
+            _task_finish.Set();
+            _task_finished.WaitOne();
             _msg_stream.StopWaitingIncoming();
             _data_stream.StopWaitingIncoming();
             _worker.Join();
@@ -72,11 +76,6 @@ namespace NUFL.Framework.ProfilerCommunication
             _handlers[(int)msg_type] -= handler;
         }
 
-        public void FlushDataStream()
-        {
-            _data_flush.Set();
-            _data_flushed.WaitOne();
-        }
 
         private void WorkerThreadFunc()
         {
@@ -111,13 +110,11 @@ namespace NUFL.Framework.ProfilerCommunication
                 try
                 {
                     _handlers[(Int32)msg_type](msg, _msg_stream);
-                }
-                catch (Exception ex)
+                } catch(Exception e)
                 {
-                    Debug.WriteLine("Message handler exception: {0}", ex.ToString());
-                    throw new Exception("Critical Error: Message handle throws a exception"); 
-                    
+                    throw new Exception("handling message " + msg_type + " error!");
                 }
+
             }
         }
 

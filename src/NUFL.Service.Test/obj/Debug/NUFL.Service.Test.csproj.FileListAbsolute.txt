@@ -1,8 +1,0 @@
-E:\workplace\NUFL\src\NUFL.Service.Test\obj\Debug\NUFL.Service.Test.csprojResolveAssemblyReference.cache
-E:\workplace\NUFL\src\NUFL.Service.Test\bin\Debug\NUFL.Service.Test.dll
-E:\workplace\NUFL\src\NUFL.Service.Test\bin\Debug\NUFL.Service.Test.pdb
-E:\workplace\NUFL\src\NUFL.Service.Test\bin\Debug\NUFL.Service.dll
-E:\workplace\NUFL\src\NUFL.Service.Test\bin\Debug\nunit.framework.dll
-E:\workplace\NUFL\src\NUFL.Service.Test\bin\Debug\NUFL.Service.pdb
-E:\workplace\NUFL\src\NUFL.Service.Test\obj\Debug\NUFL.Service.Test.dll
-E:\workplace\NUFL\src\NUFL.Service.Test\obj\Debug\NUFL.Service.Test.pdb

@@ -10,9 +10,9 @@ namespace NUFL.Framework.Persistance
 {
     public interface IPersistance
     {
-        void PersistModule(Module module);
+        void PersistProgram(Program program);
         void PersistTestResult(TestResult result);
         void SaveCoverageData(UInt32[] data, UInt32 length);
-        void Commit(int result_count);
+        void Commit();
     }
 }

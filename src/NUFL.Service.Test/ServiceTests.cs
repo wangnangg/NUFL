@@ -11,7 +11,7 @@ namespace NUFL.Service.Test
     {
         double Add(double a, double b);
     }
-    public class Calculator : GlobalInstanceServiceBase, ICalculator
+    public class Calculator : GlobalSingletonService, ICalculator
     {
         static int i = 0;
         public Calculator()

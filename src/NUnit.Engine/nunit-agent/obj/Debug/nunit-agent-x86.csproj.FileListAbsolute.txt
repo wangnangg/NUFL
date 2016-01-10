@@ -1,6 +1,0 @@
-E:\workplace\NUFL\bin\Debug\nunit-agent-x86.exe.config
-E:\workplace\NUFL\bin\Debug\nunit-agent-x86.exe
-E:\workplace\NUFL\src\NUnit.Engine\nunit-agent\obj\Debug\nunit-agent-x86.csprojResolveAssemblyReference.cache
-E:\workplace\NUFL\src\NUnit.Engine\nunit-agent\obj\Debug\nunit-agent-x86.exe
-E:\workplace\NUFL\src\NUnit.Engine\nunit-agent\obj\Debug\nunit-agent-x86.pdb
-E:\workplace\NUFL\bin\Debug\nunit-agent-x86.pdb

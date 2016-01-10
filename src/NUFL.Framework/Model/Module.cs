@@ -1,58 +1,94 @@
-﻿//
-// OpenCover - S Wilde
-//
-// This source code is released under the MIT License; see the accompanying license file.
-//
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Xml.Serialization;
-
+using System.Threading.Tasks;
+using NUFL.Framework.Setting;
+using NUFL.Framework.Symbol;
+using System.Diagnostics;
 namespace NUFL.Framework.Model
 {
-    /// <summary>
-    /// The details of a module
-    /// </summary>
-    public class Module:ProgramEntityBase
+    public class Module : ProgramEntityBase
     {
-        /// <summary>
-        /// simple constructor
-        /// </summary>
-        public Module()
+
+        Dictionary<int, Method> _token_method_mapping;
+        ProgramEntityFilter _filter;
+        SymbolReader _symbol_reader;
+
+       
+        public string ModulePath { set; get; }
+        public string FullName { set; get; }
+        public List<Class> Classes { set; get; }
+
+        public Module(string module_path, string fullname, ProgramEntityFilter filter, IEnumerable<string> pdb_directories, Program program):base(program)
         {
-            Aliases = new List<string>();
+            ModulePath = module_path;
+            _filter = filter;
+            FullName = fullname;
+            Skipped = !_filter.UseAssembly(this);
+            if (!Skipped)
+            {
+                _symbol_reader = new SymbolReader(module_path, filter, pdb_directories, this);
+                if(_symbol_reader.SourceAssembly == null)
+                {
+                    Skipped = true;
+                    _symbol_reader = null;
+                }
+            }
+            
+        }
+        public List<InstrumentationPoint> GetSequencePointsForMethod(int token)
+        {
+            if(Skipped)
+            {
+                return null;
+            }
+            BuildModule(true);
+            if(_token_method_mapping.ContainsKey(token))
+            {
+                var method = _token_method_mapping[token];
+                return method.Points;
+            }
+            return null;
         }
 
-        /// <summary>
-        /// The full path name to the module
-        /// </summary>
-        public string FullName { get; set; }
-
-        /// <summary>
-        /// A list of aliases
-        /// </summary>
-        [XmlIgnore]
-        public IList<string> Aliases { get; private set; } 
-
-        /// <summary>
-        /// The name of the module
-        /// </summary>
-        public string ModuleName { get; set; }
 
 
-        /// <summary>
-        /// The classes that make up the module
-        /// </summary>
-        public Class[] Classes { get; set; }
-
-        public bool Skipped { get; set; }
-
-        /// <summary>
-        /// A hash of the file used to group them together (especially when running against mstest)
-        /// </summary>
-        [XmlAttribute("hash")]
-        public string ModuleHash { get; set; }
+        bool _half_built = false;
+        bool _full_built = false;
+        public void BuildModule(bool full)
+        {
+            if(_full_built)
+            {
+                return;
+            }
+            if (!_half_built)
+            {
+                Classes = _symbol_reader.GetClasses();
+                _half_built = true;
+            }
+            if (full)
+            {
+                _token_method_mapping = new Dictionary<int, Method>();
+                foreach (var @class in Classes)
+                {
+                    if (@class.Skipped)
+                    {
+                        continue;
+                    }
+                    foreach (var method in @class.Methods)
+                    {
+                        if (method.Skipped)
+                        {
+                            continue;
+                        }
+                        _token_method_mapping.Add(method.MetadataToken, method);
+                        method.BuildMethod();
+                    }
+                }
+                _full_built = true;
+            }
+        }
 
 
 
@@ -60,9 +96,13 @@ namespace NUFL.Framework.Model
         {
             get
             {
+                if (!_full_built)
+                {
+                    yield break;
+                }
                 foreach (var @class in Classes)
                 {
-                    if(@class.Skipped || @class.Methods == null || @class.Methods.Length == 0)
+                    if (@class.Skipped)
                     {
                         continue;
                     }
@@ -72,28 +112,13 @@ namespace NUFL.Framework.Model
             }
         }
 
-        protected override List<ProgramEntityBase> GetDirectChildrenSortedByCov()
-        {
-            List<ProgramEntityBase> children = new List<ProgramEntityBase>(Classes);
-            children.Sort((x, y) => { return x.CoveragePercent.CompareTo(y.CoveragePercent); });
-            return children;
-        }
-
-        protected override List<ProgramEntityBase> GetDirectChildrenSortedBySusp()
-        {
-            List<ProgramEntityBase> children = new List<ProgramEntityBase>(Classes);
-            children.Sort((x, y) => { return -x.Susp.CompareTo(y.Susp); });
-            return children;
-        }
 
         public override string DisplayName
         {
             get
             {
-                return ModuleName;
+                return FullName;
             }
         }
-
-
     }
 }

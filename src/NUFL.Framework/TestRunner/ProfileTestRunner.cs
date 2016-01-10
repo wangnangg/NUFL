@@ -19,15 +19,15 @@ using NUFL.Service;
 using System.Xml;
 using System.Xml.Serialization;
 using System.Runtime.Remoting.Lifetime;
+using NUnit.Engine.Services;
 namespace NUFL.Framework.TestRunner
 {
-    class ProfileTestRunner : RemoteRunnerBase, INUnitTestEventListener, ITestExectuor, ITestDiscoverer
+    class ProfileTestRunner : RemoteRunnerBase, INUnitTestEventListener, INUFLTestRunner
     {
         ProfilerMessageDispatcher _profiler_msg_dispatcher;
         Program _program;
         Thread _data_process_thread;
-        IFilter _filter;
-        public IOption Option
+        public ISetting Option
         {
             get;
             set;
@@ -41,6 +41,7 @@ namespace NUFL.Framework.TestRunner
         ITestEngineRunner _runner;
         ITestEngine _engine;
         ITestAgent _agent;
+        TestAgency _agency;
         List<string> _pdb_directories;
         public ProfileTestRunner()
         {
@@ -48,15 +49,18 @@ namespace NUFL.Framework.TestRunner
         }
         public void Load(IEnumerable<string> assemblies)
         {
-            _filter = Filter.BuildFilter(assemblies);
             _pdb_directories = GetPDBDirectories(assemblies);
+            _program = new Program(Option.GetSetting<ProgramEntityFilter>("filter"), _pdb_directories);
+            ProfilePersistance.PersistProgram(_program);
             StartProfilerServer();
             TestPackage package = new TestPackage(new List<string>(assemblies));
             _runner = CreateRunner(package);
             _runner.Load();
-
-            
         }
+
+
+
+
 
         private List<string> GetPDBDirectories(IEnumerable<string> assemblies)
         {
@@ -72,7 +76,6 @@ namespace NUFL.Framework.TestRunner
         private void StartProfilerServer()
         {
             //cache module
-            _program = new Program();
             _profiler_msg_dispatcher = new ProfilerMessageDispatcher();
             _profiler_msg_dispatcher.RegisterHandler(MSG_Type.MSG_TrackAssembly, TrackAssemblyHandler);
             _profiler_msg_dispatcher.RegisterHandler(MSG_Type.MSG_GetSequencePoints, GetSequencePointsHandler);
@@ -102,66 +105,117 @@ namespace NUFL.Framework.TestRunner
                 dictionary["OpenCover_Data_Buffer_Size"] = _profiler_msg_dispatcher.DataStream.BufferSize.ToString();
                 dictionary["OpenCover_Profiler_TraceByTest"] = "1";
             };
-
-            _agent = sc.TestAgency.GetAgent(
-                sc.RuntimeFrameworkSelector.SelectRuntimeFramework(package),
+            _agency = sc.GetService<TestAgency>();
+            _agent = _agency.GetAgent(
+                package,
                 30000,
-                false,   //debug?
-                "",
-                true, //x86?
                 environment);
             ITestEngineRunner remote_runner = _agent.CreateRunner(package);
             return remote_runner;
 
         }
 
+
+        bool _unloaded = false;
+        object _lock = new object();
         public void Unload()
         {
-            //stop nunit
-            try
+            lock (_lock)
             {
-                _runner.Unload();
-                _runner.Dispose();
-                _agent.Stop();
-                (_engine.Services as ServiceContext).TestAgency.WaitAgent(_agent);
-            }catch(Exception e)
-            {
-                Debug.WriteLine("error trying to unload runner. " + e.Message);
+                if (_unloaded)
+                {
+                    return;
+                }
+                try
+                {
+                    _runner.Unload();
+                }
+                catch (Exception)
+                {
+
+                }
+                //_runner.Dispose();
+                try
+                {
+                    _agent.Stop();
+                }
+                catch (Exception)
+                {
+
+                }
+                // _agency.ReleaseAgent(_agent);
+
+                // }catch(Exception e)
+                //  {
+                //     Debug.WriteLine("error trying to unload runner. " + e.Message);
+                // }
+
+                //stop sever
+                _profiler_msg_dispatcher.Stop();
+                _profiler_msg_dispatcher.UnregisterHandler(MSG_Type.MSG_TrackAssembly, TrackAssemblyHandler);
+                _profiler_msg_dispatcher.UnregisterHandler(MSG_Type.MSG_GetSequencePoints, GetSequencePointsHandler);
+                _data_process_thread.Join();
+                _profiler_msg_dispatcher.Dispose();
+
+                ProfilePersistance.Commit();
+
+                _unloaded = true;
             }
-            
-            //stop sever
-            _profiler_msg_dispatcher.Stop();
-            _profiler_msg_dispatcher.UnregisterHandler(MSG_Type.MSG_TrackAssembly, TrackAssemblyHandler);
-            _profiler_msg_dispatcher.UnregisterHandler(MSG_Type.MSG_GetSequencePoints, GetSequencePointsHandler);
-            _data_process_thread.Join();
-            _profiler_msg_dispatcher.Dispose();
         }
 
-        ITestResultListener _listener = null;
+        INUFLTestEventListener _listener = null;
 
-        public void RunTests(IEnumerable<string> full_qualified_names, ITestResultListener listener)
+        public void RunTests(IEnumerable<string> full_qualified_names, INUFLTestEventListener listener)
         {
             NameFilter filter = new NameFilter(full_qualified_names);
             RunTests(filter, listener);
         }
 
-        public void RunAllTests(ITestResultListener listener)
+        public void RunAllTests(INUFLTestEventListener listener)
         {
             TestFilter filter = TestFilter.Empty;
             RunTests(filter, listener);
         }
 
-        void RunTests(TestFilter filter, ITestResultListener listener)
+        void RunTests(TestFilter filter, INUFLTestEventListener listener)
         {
             _listener = listener;
-            var node = _runner.Run(this, filter).Xml;
-            _profiler_msg_dispatcher.FlushDataStream();
-            ProfilePersistance.Commit(int.Parse(node.Attributes["total"].Value));
+            try
+            {
+                _runner.Run(this, filter);
+            }catch(Exception)
+            {
+                Unload();
+            }
+
+        }
+        public void StopRun()
+        {
+            try
+            {
+                _runner.StopRun(true);
+            }catch(Exception)
+            {
+                Unload();
+            }
         }
 
         public List<TestCase> DiscoverTests()
         {
-            List<TestCase> test_cases = TestConverters.ConvertFromNUnitTestCase(_runner.Explore(TestFilter.Empty).Xml);
+            List<TestCase> test_cases = TestConverters.ConvertFromNUnitTestCases(_runner.Explore(TestFilter.Empty).Xml);
+            Program program = new Program(new ProgramEntityFilter(), _pdb_directories);
+            foreach (var tc in test_cases)
+            {
+                program.AddModule(tc.AssemblyPath, "");
+                SourceFile file;
+                int? line;
+                program.FindMethodSourcePosition(tc.AssemblyPath, tc.ClassName, tc.MethodName, out file, out line);
+                if (file != null && line != null)
+                {
+                    tc.CodeFilePath = file.FullName;
+                    tc.LineNumber = line.Value;
+                }
+            }
             return test_cases;
         }
 
@@ -203,18 +257,10 @@ namespace NUFL.Framework.TestRunner
             MSG_TrackAssembly_Response response;
             //Debug.WriteLine("track " + ta_req.assemblyName);
 
-            var module_builder = new InstrumentationModelBuilder(ta_req.modulePath, ta_req.assemblyName, Option, _filter, _pdb_directories);
-            if(_filter.UseAssembly(ta_req.assemblyName) && module_builder.CanInstrument)
-            {
-                var module = module_builder.BuildModuleModel();
-                //to do: record this module for getsequencepoints
-                _program.AddModule(module);
-                ProfilePersistance.PersistModule(module);
-                response.track = true;
-            } else
-            {
-                response.track = false;
-            }
+            var module = _program.AddModule(ta_req.modulePath, ta_req.assemblyName);
+
+            response.track = module.Skipped ? false : true;
+
             //inspect test invokers
             var tokens = NUnitTestInvokerFinder.GetInvokerTokens(ta_req.modulePath, ta_req.assemblyName);
             response.testInvokerCount = tokens.Count;
@@ -229,44 +275,68 @@ namespace NUFL.Framework.TestRunner
         private void GetSequencePointsHandler(object msg_obj, IPCStream msg_stream)
         {
             MSG_GetSequencePoints_Request gsp_req = (MSG_GetSequencePoints_Request)msg_obj;
-            var method = _program.RetrieveMethod(gsp_req.modulePath, gsp_req.functionToken);
-            if (method != null && !method.Skipped)
+            var points = _program.GetSequencePointsForMethod(gsp_req.modulePath, gsp_req.functionToken);
+
+            MSG_GetSequencePoints_Response gsp_resp = new MSG_GetSequencePoints_Response();
+            gsp_resp.count = points.Count;
+            ProfilerMessageDispatcher.SendMessageNoFlush<MSG_GetSequencePoints_Response>(msg_stream, ref gsp_resp);
+            foreach (var point in points)
             {
-                InstrumentationPoint[] points = method == null ? new InstrumentationPoint[0] : method.Points;
-                MSG_GetSequencePoints_Response gsp_resp = new MSG_GetSequencePoints_Response();
-                gsp_resp.count = points.Length;
-                ProfilerMessageDispatcher.SendMessageNoFlush<MSG_GetSequencePoints_Response>(msg_stream, ref gsp_resp);
-                foreach (var point in points)
-                {
-                    MSG_SequencePoint sp;
-                    sp.offset = point.Offset;
-                    sp.uniqueId = point.UniqueSequencePoint;
-                    byte[] bytes = ProfilerMessageDispatcher.ToBytes<MSG_SequencePoint>(ref sp);
-                    msg_stream.Write(bytes, 0, (UInt32)bytes.Length);
-                }
-                msg_stream.Flush();
-            } else
-            {
-                MSG_GetSequencePoints_Response gsp_resp = new MSG_GetSequencePoints_Response();
-                gsp_resp.count = 0;
-                ProfilerMessageDispatcher.SendMessage<MSG_GetSequencePoints_Response>(msg_stream, ref gsp_resp);
+                MSG_SequencePoint sp;
+                sp.offset = point.Offset;
+                sp.uniqueId = point.UniqueSequencePoint;
+                byte[] bytes = ProfilerMessageDispatcher.ToBytes<MSG_SequencePoint>(ref sp);
+                msg_stream.Write(bytes, 0, (UInt32)bytes.Length);
             }
+            msg_stream.Flush();
         }
 
 
 
         public void OnTestEvent(string report)
         {
+            var node = XmlHelper.CreateXmlNode(report);
+            switch (node.Name)
+            {
+                case "start-test":
+                    TestStarted(node);
+                    break;
+
+                case "test-case":
+                    TestFinished(node);
+                    break;
+            }
+            
+        }
+
+        private void TestFinished(XmlNode node)
+        {
             try
             {
-                TestResult result = TestConverters.ConvertFromNUnitTestResult(report);
+                TestResult result = TestConverters.ConvertFromNUnitTestResult(node);
                 ProfilePersistance.PersistTestResult(result);
-                if(_listener != null)
+                if (_listener != null)
                 {
                     _listener.OnTestResult(result);
                 }
             }
-            catch (Exception e) 
+            catch (Exception e)
+            {
+                Debug.WriteLine(e.Message);
+            }
+        }
+
+        private void TestStarted(XmlNode node)
+        {
+            try
+            {
+                string fullname = TestConverters.ConvertFromNUnitTestCaseStart(node);
+                if (_listener != null)
+                {
+                    _listener.OnTestStart(fullname);
+                }
+            }
+            catch (Exception e)
             {
                 Debug.WriteLine(e.Message);
             }
@@ -277,6 +347,8 @@ namespace NUFL.Framework.TestRunner
             _engine.Dispose();
             base.Dispose();
         }
+
+
 
     }
 

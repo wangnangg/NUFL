@@ -4,6 +4,8 @@
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Text;
+using Microsoft.VisualStudio.Text.Editor;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -31,20 +33,30 @@ namespace Buaa.NUFL_VSPackage.Helpers
 		/// Opens the file in Visual Studio.
 		/// </summary>
 		/// <param name="file">The file path.</param>
-		internal static void OpenFile(string file)
+		internal static bool OpenFile(string file)
 		{
 			try
 			{
 				if (System.IO.File.Exists(file))
 				{
 					DTE.ItemOperations.OpenFile(file);
+                    return true;
 				}
 			}
 			catch (Exception ex)
 			{
 				Debug.WriteLine(ex.Message);
 			}
+            return false;
 		}
+
+        internal static void NavigateTo(string file, int line)
+        {
+            if(OpenFile(file))
+            {
+                GoToLine(line);
+            }
+        }
 
         internal static string GetCurrentSolutionPath()
         {
@@ -78,6 +90,54 @@ namespace Buaa.NUFL_VSPackage.Helpers
 			DTE.ExecuteCommand("GotoLn", lineNumber.ToString());
 		}
 
-       
+
+        /// <summary>
+        /// Returns the document file name of the text view.
+        /// </summary>
+        /// <param name="view">The view instance.</param>
+        /// <returns></returns>
+        internal static string GetFileName(ITextView view)
+        {
+            ITextBuffer TextBuffer = view.TextBuffer;
+
+            ITextDocument TextDocument = GetTextDocument(TextBuffer);
+
+            if (TextDocument == null || TextDocument.FilePath == null || TextDocument.FilePath.Equals("Temp.txt"))
+            {
+                return null;
+            }
+
+            return TextDocument.FilePath;
+        }
+
+        /// <summary>
+        /// Retrives the ITextDocument from the text buffer.
+        /// </summary>
+        /// <param name="TextBuffer">The text buffer instance.</param>
+        /// <returns></returns>
+        private static ITextDocument GetTextDocument(ITextBuffer TextBuffer)
+        {
+            if (TextBuffer == null)
+                return null;
+
+            ITextDocument textDoc;
+            var rc = TextBuffer.Properties.TryGetProperty<ITextDocument>(typeof(ITextDocument), out textDoc);
+
+            if (rc == true)
+                return textDoc;
+            else
+                return null;
+        }
+
+        /// Given an IWpfTextViewHost representing the currently selected editor pane,
+        /// return the ITextDocument for that view. That's useful for learning things 
+        /// like the filename of the document, its creation date, and so on.
+        internal static ITextDocument GetTextDocumentForView(IWpfTextViewHost viewHost)
+        {
+            ITextDocument document;
+            viewHost.TextView.TextDataModel.DocumentBuffer.Properties.TryGetProperty(typeof(ITextDocument), out document);
+            return document;
+        }
+
 	}
 }

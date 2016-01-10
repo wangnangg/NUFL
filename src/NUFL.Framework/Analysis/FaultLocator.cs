@@ -14,18 +14,16 @@ using NUFL.Framework.Setting;
 
 namespace NUFL.Framework.Analysis
 {
-    public class FaultLocator : MarshalByRefObject, IPersistance
+    public class FaultLocator : IPersistance
     {
         List<TestResult> _tc_list = new List<TestResult>();
         List<Coverage> _cov_list = new List<Coverage>();
         FormulaFactory _formula_factory = new FormulaFactory();
-        Program _program = new Program();
+        Program _program;
         int _tc_count = 0;
         int _cov_count = 0;
 
-        public IFLResultPresenter Presenter { set; get; }
-
-        public IOption Option { set; get; }
+        public ISetting Option { set; get; }
 
         int ValidDataCount
         {
@@ -33,14 +31,22 @@ namespace NUFL.Framework.Analysis
         }
 
         //保存
-        public void PersistModule(Model.Module module)
+        public void PersistProgram(Program program)
         {
+            if (_commited)
+            {
+                return;
+            }
             //Debug.WriteLine("persisting " + module.FullName);
-            _program.AddModule(module);
+            _program = program;
         }
-
+        bool _commited = false;
         public void PersistTestResult(NUFL.Framework.TestModel.TestResult result)
         {
+            if (_commited)
+            {
+                return;
+            }
             TestResult ourresult = new TestResult()
             {
                 Passed = result.Outcome == TestModel.TestOutcome.Passed ? true : false,
@@ -52,6 +58,10 @@ namespace NUFL.Framework.Analysis
         Coverage current;
         public void SaveCoverageData(UInt32[] data, UInt32 length)
         {
+            if(_commited)
+            {
+                return;
+            }
             for (int i = 0; i < length; i++)
             {
                 UInt32 uid = data[i];
@@ -59,7 +69,7 @@ namespace NUFL.Framework.Analysis
                 if((uid & (UInt32)MSG_IdType.IT_MethodEnter) > 0)
                 {
                     //this is method enter
-                    current = new Coverage();
+                    current = new Coverage(_program);
                     _cov_list.Add(current);
                     continue;
                 }
@@ -83,25 +93,28 @@ namespace NUFL.Framework.Analysis
             }
         }
 
-        int poll_time = 50;
-        int max_time = 5000;
-        public void Commit(int result_count)
+        public void Commit()
         {
-            int wait_time = 0; 
-            while(ValidDataCount < result_count)
-            {
-                System.Threading.Thread.Sleep(poll_time);
-                wait_time += poll_time;
-                if(wait_time > max_time)
-                {
-                    break;
-                }
-            }
+            _commited = true;
             Match();
-            if(Presenter != null)
+            var ranklist = GetRankList(Option.GetSetting<string>("fl_method"));
+            _program.CalcSupsLevel(ranklist.GetSuspList(typeof(InstrumentationPoint)));
+            if(GlobalEventManager.Instance != null)
             {
-                Presenter.Present(GetRankList(Option.FLMethod));
+                GlobalEventManager.Instance.RaiseEvent(new GlobalEvent()
+                {
+                    Name = EventEnum.ProgramChanged,
+                    Argument = _program,
+                    Sender = this
+                });
+                GlobalEventManager.Instance.RaiseEvent(new GlobalEvent()
+                {
+                    Name = EventEnum.RankListChanged,
+                    Argument = ranklist,
+                    Sender = this
+                });
             }
+
         }
 
         void Match()
@@ -134,19 +147,18 @@ namespace NUFL.Framework.Analysis
                 {
                     if (tc.Coverage.IsCovered(i))
                     {
-                        InstrumentationPoint.InstrumentPoints[(int)i].Cover(true, passed);
+                         _program.Points[(int)i].Cover(true, passed);
                     }else
                     {
-                        InstrumentationPoint.InstrumentPoints[(int)i].Cover(false, passed);
+                        _program.Points[(int)i].Cover(false, passed);
                     }
                 }
             }
-            foreach (var entry in InstrumentationPoint.InstrumentPoints)
+            foreach (var entry in _program.Points)
             {
                 entry.Calculate(formula);
             }
         }
-
 
     }
 }

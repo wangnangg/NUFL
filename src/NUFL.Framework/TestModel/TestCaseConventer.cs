@@ -13,25 +13,49 @@ namespace NUFL.Framework.TestModel
         {
             XmlDocument doc = new XmlDocument();
             doc.LoadXml(xml_string);
-            return ConvertFromNUnitTestCase(doc);
+            return ConvertFromNUnitTestCases(doc);
         }
-        public static List<TestCase> ConvertFromNUnitTestCase(XmlNode node)
+        public static List<TestCase> ConvertFromNUnitTestCases(XmlNode node)
         {
             var result = new List<TestCase>();
-            var ntc_nodes = node.SelectNodes("//test-case");
+            var ntc_nodes = node.SelectNodes("descendant::test-case");
             foreach (XmlNode ntc in ntc_nodes)
             {
-                TestCase tc = new TestCase()
+                if (ntc.Attributes["runstate"].Value == "Runnable")
                 {
-                    DisplayName = ntc.Attributes["name"].Value,
-                    FullyQualifiedName = ntc.Attributes["fullname"].Value,
-                    AssemblyPath = NUnitFindTestcaseAssembly(ntc),
-                };
-                result.Add(tc);
+                    TestCase tc = new TestCase()
+                    {
+                        DisplayName = ntc.Attributes["name"].Value,
+                        FullyQualifiedName = ntc.Attributes["fullname"].Value,
+                        AssemblyPath = NUnitFindTestcaseAssembly(ntc),
+                        ClassName = ntc.Attributes["classname"].Value,
+                        MethodName = ntc.Attributes["methodname"].Value,
+                    };
+                    tc.Properties = new List<Tuple<string, string>>();
+                    var property_nodes = ntc.SelectNodes("ancestor-or-self::node()/properties/property");
+                    foreach (XmlNode property in property_nodes)
+                    {
+                        tc.Properties.Add(new Tuple<string, string>(
+                            property.Attributes["name"].Value,
+                            property.Attributes["value"].Value));
+                    }
+                  
+                    result.Add(tc);
+                }
             }
 
             return result;
         }
+        public static string ConvertFromNUnitTestCaseStart(XmlNode node)
+        {
+            XmlNode test_case_start = node;
+            if(test_case_start.Name != "start-test")
+            {
+                throw new Exception("Invaild XML For Test Case Start.");
+            }
+            return test_case_start.Attributes["fullname"].Value;
+        }
+
 
         private static string NUnitFindTestcaseAssembly(XmlNode ntc)
         {
@@ -43,13 +67,13 @@ namespace NUFL.Framework.TestModel
         {
             XmlDocument doc = new XmlDocument();
             doc.LoadXml(xml_string);
-            return ConvertFromNUnitTestResult(doc);
+            return ConvertFromNUnitTestResult(doc.FirstChild);
         }
 
         public static TestResult ConvertFromNUnitTestResult(XmlNode node)
         {
-            XmlNode test_case = node.SelectSingleNode("test-case");
-            if(test_case == null)
+            XmlNode test_case = node;
+            if (test_case.Name != "test-case")
             {
                 throw new Exception("Invaild XML For Test Result.");
             }

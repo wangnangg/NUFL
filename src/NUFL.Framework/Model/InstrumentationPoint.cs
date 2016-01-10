@@ -49,54 +49,32 @@ namespace NUFL.Framework.Model
 
         public override void Reset(bool recursive)
         {
+            base.Reset(false);
             a_ep = 0;
             a_ef = 0;
             a_np = 0;
             a_nf = 0;
-            base.Reset(false);
+            Susp = float.MinValue;
         }
 
-
-        public static readonly List<InstrumentationPoint> InstrumentPoints = new List<InstrumentationPoint>(8192);
-
-        public static int Count
+        public InstrumentationPoint(Method method)
+            : base(method)
         {
-            get { return InstrumentPoints.Count; }
+            Program program = (Program)Parent.Parent.Parent.Parent;
+            program.RegisterPoint(this);
+           
         }
-
-        public static void ResetAllLeaf()
-        {
-            foreach(var entry in InstrumentPoints)
-            {
-                entry.Reset(false);
-            }
-        }
-
-
-        /// <summary>
-        /// Initialise
-        /// </summary>
-        public InstrumentationPoint()
-        {
-            UniqueSequencePoint = (uint)InstrumentPoints.Count;
-            InstrumentPoints.Add(this);
-        }
-
-
         /// <summary>
         /// A unique number
         /// </summary>
         public UInt32 UniqueSequencePoint { get; set; }
 
-        /// <summary>
-        /// An order of the point within the method
-        /// </summary>
-        public UInt32 Ordinal { get; set; }
-
-        /// <summary>
-        /// The IL offset of the point
-        /// </summary>
         public int Offset { get; set; }
+
+        public int StartLine { get; set; }
+        public int StartColumn { get; set; }
+        public int EndLine { get; set; }
+        public int EndColumn { get; set; }
 
         public override int LeafChildrenCount
         {
@@ -120,6 +98,15 @@ namespace NUFL.Framework.Model
             {
                 return UniqueSequencePoint.ToString();
             }
+        }
+
+        protected override List<ProgramEntityBase> GetDirectChildrenSortedByCov()
+        {
+            return EmptyList;
+        }
+        protected override List<ProgramEntityBase> GetDirectChildrenSortedBySusp()
+        {
+            return EmptyList;
         }
        
     }

@@ -1,0 +1,9 @@
+﻿<Window x:Class="Buaa.NUFL_VSPackage.View.SettingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:view="clr-namespace:NUFL.GUI.View;assembly=NUFL.GUI"
+        Title="SettingWindow" Height="300" Width="300">
+    <view:SettingView>
+        
+    </view:SettingView>
+</Window>

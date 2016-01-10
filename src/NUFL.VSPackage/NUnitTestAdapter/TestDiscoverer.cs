@@ -8,9 +8,7 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using NUFL.Framework;
 using NUFL.Service;
-using NUnit.Engine;
-using NUFL.Server;
-
+using System.Diagnostics;
 namespace Buaa.NUFL_VSPackage.NUnitTestAdapter
 {
     [ExtensionUri(UriString)]
@@ -21,22 +19,17 @@ namespace Buaa.NUFL_VSPackage.NUnitTestAdapter
         public static Uri Uri = new Uri(UriString);
         public void DiscoverTests(IEnumerable<string> sources, IDiscoveryContext discoveryContext, Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging.IMessageLogger logger, ITestCaseDiscoverySink discoverySink)
         {
-            var runner_factory = new NUFL.Framework.TestRunner.SimpleRunnerFactory();
-            using (var runner = runner_factory.CreateDiscoverer())
+            var runner_factory = new NUFL.Framework.TestRunner.RunnerFactory();
+            runner_factory.IsX64 = Environment.Is64BitProcess;
+            runner_factory.OwnerPid = Process.GetCurrentProcess().Id;
+            using (var runner = runner_factory.GetProcessRunner(null))
             {
                 runner.Load(sources);
                 var nufl_test_cases = runner.DiscoverTests();
                 foreach (var test_case in nufl_test_cases)
                 {
-                    TestCase vs_test_case = new TestCase(test_case.FullyQualifiedName, TestExecutor.Uri, test_case.AssemblyPath)
-                    {
-                        DisplayName = test_case.DisplayName,
-                        CodeFilePath = test_case.CodeFilePath,
-                        LineNumber = test_case.LineNumber,
-                    };
-                    discoverySink.SendTestCase(vs_test_case);
+                    discoverySink.SendTestCase(Converter.ConvertFromNUFLTestCase(test_case));
                 }
-                runner.Unload();
             }
         }
     }

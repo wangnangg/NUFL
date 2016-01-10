@@ -4,27 +4,6 @@
         "NUFL.Profiler"
     </assembly>
     <members>
-        <member name="M:CCodeCoverage.GetMethodSignatureToken_I4(System.UInt32)">
-            <summary>Get the token for a method having a single I4 parameter</summary>
-        </member>
-        <member name="M:CCodeCoverage.GetTokenAndModule(System.UInt32,System.UInt32*!System.Runtime.CompilerServices.IsImplicitlyDereferenced,System.UInt32*!System.Runtime.CompilerServices.IsImplicitlyDereferenced,std.basic_string&lt;System.Char,std.char_traits{System.Char},std.allocator&lt;System.Char&gt;&gt;*!System.Runtime.CompilerServices.IsImplicitlyDereferenced,System.UInt32*)">
-            <summary>
-Get the function token, module ID and module name for a supplied FunctionID
-</summary>
-        </member>
-        <member name="M:CCodeCoverage.GetAssemblyName(System.UInt32)">
-            <summary>
-Get the assembly name from an AssemblyID
-</summary>
-        </member>
-        <member name="M:CCodeCoverage.GetModulePath(System.UInt32)">
-            <summary>
-Gets the module name from a ModuleID
-</summary>
-        </member>
-        <member name="M:Operations.#ctor">
-            <summary>Build the static instance</summary>
-        </member>
         <member name="M:Method.PopulateILMap(System.UInt32!System.Runtime.CompilerServices.IsLong,COR_IL_MAP*)">
             <summary>Populate a supplied COR_IL_MAP block</summary>
             <param name="mapSize">The size of the array.</param>
@@ -180,6 +159,24 @@ mdSignature pmsig = GetUnmanagedMethodSignatureToken_I4(moduleId);
             <summary>Handle <c>ICorProfilerCallback::Initialize</c></summary>
             <remarks>Initialize the profiling environment and establish connection to the host</remarks>
         </member>
+        <member name="M:CCodeCoverage.GetMethodSignatureToken_I4(System.UInt32)">
+            <summary>Get the token for a method having a single I4 parameter</summary>
+        </member>
+        <member name="M:CCodeCoverage.GetTokenAndModule(System.UInt32,System.UInt32*!System.Runtime.CompilerServices.IsImplicitlyDereferenced,System.UInt32*!System.Runtime.CompilerServices.IsImplicitlyDereferenced,std.basic_string&lt;System.Char,std.char_traits{System.Char},std.allocator&lt;System.Char&gt;&gt;*!System.Runtime.CompilerServices.IsImplicitlyDereferenced,System.UInt32*)">
+            <summary>
+Get the function token, module ID and module name for a supplied FunctionID
+</summary>
+        </member>
+        <member name="M:CCodeCoverage.GetAssemblyName(System.UInt32)">
+            <summary>
+Get the assembly name from an AssemblyID
+</summary>
+        </member>
+        <member name="M:CCodeCoverage.GetModulePath(System.UInt32)">
+            <summary>
+Gets the module name from a ModuleID
+</summary>
+        </member>
         <member name="T:CCodeCoverage">
             <summary>The main profiler COM object</summary>
         </member>
@@ -194,6 +191,19 @@ mdSignature pmsig = GetUnmanagedMethodSignatureToken_I4(moduleId);
         </member>
         <member name="T:Instruction">
             <summary>A representation of an IL instruction.</summary>
+        </member>
+        <member name="M:IPCStream.Initialize(System.UInt32)">
+            <summary>constructor for server side only for test purpose</summary>
+        </member>
+        <member name="M:IPCStream.Initialize(std.basic_string&lt;System.Char,std.char_traits{System.Char},std.allocator&lt;System.Char&gt;&gt;!System.Runtime.CompilerServices.IsConst*!System.Runtime.CompilerServices.IsImplicitlyDereferenced,System.UInt32)">
+            <summary>constructor for client side</summary>
+        </member>
+        <member name="T:ProfilerCommunication">
+            <summary>Handles communication back to the profiler host</summary>
+            <remarks>Currently this is handled by using the WebServices API</remarks>
+        </member>
+        <member name="M:Operations.#ctor">
+            <summary>Build the static instance</summary>
         </member>
         <member name="T:Operations">
             <summary>The container of the static lists used for the <c>OperationDetails</c> lookups</summary>
@@ -226,16 +236,6 @@ when pulling in "opcode.def"</remarks>
             <summary>A list of opcodes</summary>
             <remarks>Used, amongst other things, to build the <c>OperationDetails</c> structures 
 when pulling in "opcode.def"</remarks>
-        </member>
-        <member name="M:IPCStream.Initialize(System.UInt32)">
-            <summary>constructor for server side only for test purpose</summary>
-        </member>
-        <member name="M:IPCStream.Initialize(std.basic_string&lt;System.Char,std.char_traits{System.Char},std.allocator&lt;System.Char&gt;&gt;!System.Runtime.CompilerServices.IsConst*!System.Runtime.CompilerServices.IsImplicitlyDereferenced,System.UInt32)">
-            <summary>constructor for client side</summary>
-        </member>
-        <member name="T:ProfilerCommunication">
-            <summary>Handles communication back to the profiler host</summary>
-            <remarks>Currently this is handled by using the WebServices API</remarks>
         </member>
     </members>
 </doc>

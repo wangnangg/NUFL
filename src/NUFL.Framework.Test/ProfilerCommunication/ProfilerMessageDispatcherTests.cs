@@ -13,25 +13,21 @@ using NUnit.Engine.Runners;
 using NUnit.Engine.Internal;
 using NUFL.Framework.ProfilerCommunication;
 using NUFL.Framework.Setting;
+using NUnit.Engine.Services;
 
 namespace NUFL.Framework.Test.ProfilerCommunication
 {
     [TestFixture]
     class ProfilerMessageDispatcherTests
     {
-        NUFLOption _option;
+        NUFLSetting _option;
         IFilter _filter;
         ILog _logger;
         [SetUp]
         public void Setup()
         {
 
-            _option = new NUFLOption();
-            _option.TestAssemblies.Add(@".\MockAssembly\NUFL.TestTarget.dll");
-            _option.TargetDir = @".\MockAssembly";
-            _option.ProfileFilters.Add("+[NUFL*]*");
-
-            _filter = Filter.BuildFilter(_option.ProfileFilters, false);
+            _option = new NUFLSetting();
             _logger = LogManager.GetLogger("test");
         }
         [Test]
@@ -135,12 +131,9 @@ namespace NUFL.Framework.Test.ProfilerCommunication
             ServiceContext sc = (ServiceContext)engine.Services;
             var eventHandler = new TestEventHandler();
 
-            ITestAgent agent = sc.TestAgency.GetAgent(
-                sc.RuntimeFrameworkSelector.SelectRuntimeFramework(package),
+            ITestAgent agent = sc.GetService<TestAgency>().GetAgent(
+                package,
                 30000,
-                false,   //debug?
-                "",
-                true, //x86?
                 (dictionary) =>
                 {
                     dictionary[@"OpenCover_Profiler_Key"] = dispatcher.MsgStreamGuid;
@@ -162,51 +155,8 @@ namespace NUFL.Framework.Test.ProfilerCommunication
             remote_runner.Unload();
             remote_runner.Dispose();
             // agent.Stop();
-            sc.TestAgency.WaitAgent(agent);
-
-        }
-
-        void RunNunitTrackMethod(string target, ProfilerMessageDispatcher dispatcher)
-        {
-            ProfilerRegistration.Register(Registration.Path32);
-            ITestEngine engine = new TestEngine();
-            TestPackage package = new TestPackage(target);
-            package.Settings.Add("ShadowCopyFiles", true);
-            TestFilter filter = new TestFilter("<filter></filter>");
-            ServiceContext sc = (ServiceContext)engine.Services;
-            var eventHandler = new TestEventHandler();
-
-            ITestAgent agent = sc.TestAgency.GetAgent(
-                sc.RuntimeFrameworkSelector.SelectRuntimeFramework(package),
-                30000,
-                false,   //debug?
-                "",
-                true, //x86?
-                (dictionary) =>
-                {
-                    dictionary[@"OpenCover_Profiler_Key"] = dispatcher.MsgStreamGuid;
-                    dictionary[@"OpenCover_Profiler_Namespace"] = "Local";
-                    dictionary[@"OpenCover_Profiler_Threshold"] = "1";
-                    dictionary["Cor_Profiler"] = "{9E0614F2-BE35-4A96-A56D-25C59F3684E2}";
-                    dictionary["Cor_Enable_Profiling"] = "1";
-                    dictionary["CoreClr_Profiler"] = "{9E0614F2-BE35-4A96-A56D-25C59F3684E2}";
-                    dictionary["CoreClr_Enable_Profiling"] = "1";
-                    dictionary["Cor_Profiler_Path"] = ProfilerRegistration.GetProfilerPath(false);
-                    dictionary["OpenCover_Msg_Buffer_Guid"] = dispatcher.MsgStreamGuid;
-                    dictionary["OpenCover_Msg_Buffer_Size"] = dispatcher.MsgStreamBufferSize.ToString();
-                    dictionary["OpenCover_Data_Buffer_Guid"] = dispatcher.DataStream.UniqueGuid;
-                    dictionary["OpenCover_Data_Buffer_Size"] = dispatcher.DataStream.BufferSize.ToString();
-                    dictionary["OpenCover_Profiler_TraceByTest"] = "1";
-                });
-            ITestEngineRunner remote_runner = agent.CreateRunner(package);
-            remote_runner.Load();
-            var result = remote_runner.Run(eventHandler, filter).Aggregate("test-run", package.Name, package.FullName).Xml; ;
-            remote_runner.Unload();
-            remote_runner.Dispose();
             agent.Stop();
-            sc.TestAgency.WaitAgent(agent);
 
-            ProfilerRegistration.Unregister(Registration.Path32);
         }
 
         void ProcessCovData(object arg)

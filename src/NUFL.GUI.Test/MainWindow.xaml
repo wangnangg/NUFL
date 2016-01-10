@@ -5,7 +5,12 @@
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:cbfl="clr-namespace:NUFL.Framework.Analysis;assembly=NUFL.Framework"
         xmlns:view="clr-namespace:NUFL.GUI.View;assembly=NUFL.GUI"
+        xmlns:mycmd="clr-namespace:NUFL.GUI.Command;assembly=NUFL.GUI"
         Title="MainWindow" Height="350" Width="525" Loaded="Window_Loaded">
+    <Window.CommandBindings>
+        <CommandBinding Command="mycmd:FLResultViewCommands.Navigate" Executed="CommandBinding_Executed" ></CommandBinding>
+        <CommandBinding Command="mycmd:FLResultViewCommands.OpenSetting" Executed="CommandBinding_Executed_1"></CommandBinding>
+    </Window.CommandBindings>
     <view:FLResultView x:Name="_result_view" Margin="0,0,0,0">
         
     </view:FLResultView>

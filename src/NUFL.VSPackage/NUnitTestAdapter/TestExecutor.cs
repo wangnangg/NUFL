@@ -8,8 +8,7 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using NUFL.Framework;
 using NUFL.Service;
 using NUFL.Framework.TestRunner;
-using NUFL.Server;
-
+using System.Diagnostics;
 namespace Buaa.NUFL_VSPackage.NUnitTestAdapter
 {
     [ExtensionUri(UriString)]
@@ -24,20 +23,28 @@ namespace Buaa.NUFL_VSPackage.NUnitTestAdapter
         }
 
         Dictionary<string, TestCase> _cached_test_cases;
+        INUFLTestRunner _current_executor;
         public void RunTests(IEnumerable<string> sources, IRunContext runContext, IFrameworkHandle frameworkHandle)
         {
 
-
             CacheTestCases(sources);
 
-            using (ITestExectuor executor = GetExecutor(runContext))
+            using (INUFLTestRunner executor = GetExecutor(runContext, frameworkHandle))
             {
+                if(executor == null)
+                {
+                    frameworkHandle.SendMessage(Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging.TestMessageLevel.Error, "NUFL: Cannot locate solution directory.");
+                    return;
+                }
+                _current_executor = executor;
+                //var listener = new Listener(frameworkHandle, _cached_test_cases);
 
                 executor.Load(sources);
 
-                executor.RunAllTests(new Listener(frameworkHandle, _cached_test_cases));
+                executor.RunTests(null,new Listener(frameworkHandle, _cached_test_cases));
 
-                executor.Unload();
+                _current_executor = null;
+
             }
 
 
@@ -47,38 +54,46 @@ namespace Buaa.NUFL_VSPackage.NUnitTestAdapter
         private void CacheTestCases(IEnumerable<string> sources)
         {
             _cached_test_cases = new Dictionary<string, TestCase>();
-            var runner_factory = new NUFL.Framework.TestRunner.SimpleRunnerFactory();
-            using (var runner = runner_factory.CreateDiscoverer())
+            var runner_factory = new NUFL.Framework.TestRunner.RunnerFactory();
+            runner_factory.IsX64 = Environment.Is64BitProcess;
+            runner_factory.OwnerPid = Process.GetCurrentProcess().Id;
+            using (var runner = runner_factory.GetProcessRunner(null))
             {
                 runner.Load(sources);
                 var nufl_test_cases = runner.DiscoverTests();
                 foreach (var test_case in nufl_test_cases)
                 {
-                    TestCase vs_test_case = new TestCase(test_case.FullyQualifiedName, TestExecutor.Uri, test_case.AssemblyPath)
-                    {
-                        DisplayName = test_case.DisplayName,
-                        CodeFilePath = test_case.CodeFilePath,
-                        LineNumber = test_case.LineNumber,
-                    };
-                    _cached_test_cases.Add(vs_test_case.FullyQualifiedName, vs_test_case);
+                    var vs_test_case = Converter.ConvertFromNUFLTestCase(test_case);
+                    _cached_test_cases[vs_test_case.FullyQualifiedName] = vs_test_case;
                 }
-                runner.Unload();
             }
         }
 
 
         Guid guid = Guid.NewGuid();
-        private ITestExectuor GetExecutor(IRunContext runContext)
+        private INUFLTestRunner GetExecutor(IRunContext runContext, IFrameworkHandle framework_handle)
         {
             string key = runContext.SolutionDirectory;
+            int pid = Process.GetCurrentProcess().Id;
+            if(key == "")
+            {
+                return null;
+            }
             if(runContext.IsBeingDebugged)
             {
-                var runner_factory = new SimpleRunnerFactory();
-                return runner_factory.CreateExecutor();
+                var runner_factory = new NUFL.Framework.TestRunner.RunnerFactory();
+                runner_factory.IsX64 = Environment.Is64BitProcess;
+                runner_factory.OwnerPid = Process.GetCurrentProcess().Id;
+                return runner_factory.GetProcessRunner((filepath, argument) =>
+                    {
+                        framework_handle.LaunchProcessWithDebuggerAttached(filepath, System.Environment.CurrentDirectory, argument, null);
+                    });
             } else
             {
-                var runner_factory = (NUFL.Framework.TestRunner.ITestRunnerFactory)ServiceManager.Instance.GetService(typeof(NUFL.Framework.TestRunner.ITestRunnerFactory), key);
-                return runner_factory.CreateExecutor();
+                var runner_factory = RemoteRunnerFactory.GetRemoteRunnerFactory(key);
+                runner_factory.IsX64 = Environment.Is64BitProcess;
+                runner_factory.OwnerPid = Process.GetCurrentProcess().Id;
+                return runner_factory.GetRunner();
             }
 
         }
@@ -88,7 +103,7 @@ namespace Buaa.NUFL_VSPackage.NUnitTestAdapter
         {
             CacheTestCases(tests);
 
-            using (ITestExectuor executor = GetExecutor(runContext))
+            using (INUFLTestRunner executor = GetExecutor(runContext, frameworkHandle))
             {
 
                 IEnumerable<string> sources = GetSources(tests);
@@ -100,8 +115,6 @@ namespace Buaa.NUFL_VSPackage.NUnitTestAdapter
                             tests.Select<TestCase, string>(
                                 (test) => { return test.FullyQualifiedName; })),
                             new Listener(frameworkHandle, _cached_test_cases));
-
-                executor.Unload();
             }
         }
 
@@ -119,7 +132,7 @@ namespace Buaa.NUFL_VSPackage.NUnitTestAdapter
             return new List<string>(tests.Select<TestCase, string>((test) => { return test.Source; }).Distinct<string>());
         }
 
-        class Listener : MarshalByRefObject,ITestResultListener
+        class Listener : MarshalByRefObject,INUFLTestEventListener
         {
             IFrameworkHandle _handle;
             Dictionary<string, TestCase> _cache;
@@ -146,6 +159,8 @@ namespace Buaa.NUFL_VSPackage.NUnitTestAdapter
                     Duration = result.Duration,
                 };
                 _handle.RecordResult(vs_result);
+                _handle.RecordEnd(vs_test_case, vs_result.Outcome);
+                
             }
 
             private TestOutcome mapOutcome(NUFL.Framework.TestModel.TestOutcome testOutcome)
@@ -164,6 +179,12 @@ namespace Buaa.NUFL_VSPackage.NUnitTestAdapter
                         return TestOutcome.Failed;
                 }
                 return TestOutcome.None;
+            }
+
+            public void OnTestStart(string fullname)
+            {
+                var vs_test_case = _cache[fullname];
+                _handle.RecordStart(vs_test_case);
             }
         }
     }

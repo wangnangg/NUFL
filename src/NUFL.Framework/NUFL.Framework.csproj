@@ -24,7 +24,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\..\bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -51,6 +51,12 @@
     <Reference Include="Mono.Cecil.Rocks">
       <HintPath>..\packages\Mono.Cecil.0.9.5.4\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
     </Reference>
+    <Reference Include="nunit.engine">
+      <HintPath>..\..\..\nunit-master\bin\Release\nunit.engine.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.engine.api">
+      <HintPath>..\..\..\nunit-master\bin\Release\nunit.engine.api.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -60,33 +66,30 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Analysis\IFLResultPresenter.cs" />
+    <Compile Include="Model\Class.cs" />
+    <Compile Include="Model\Method.cs" />
+    <Compile Include="Model\Module.cs" />
+    <Compile Include="Model\Program.cs" />
     <Compile Include="Analysis\TestCase.cs" />
     <Compile Include="Model\ProgramEntityBase.cs" />
+    <Compile Include="Model\SourceFileCollection.cs" />
     <Compile Include="Analysis\RankList.cs" />
-    <Compile Include="Model\Program.cs" />
-    <Compile Include="Model\Position.cs" />
     <Compile Include="Analysis\Coverage.cs" />
     <Compile Include="Analysis\FaultLocator.cs" />
     <Compile Include="HelperExtensions.cs" />
     <Compile Include="Analysis\FormulaFactory.cs" />
     <Compile Include="Model\SourceFile.cs" />
-    <Compile Include="TestRunner\NameFilter.cs" />
+    <Compile Include="Setting\FileBackedSetting.cs" />
+    <Compile Include="Setting\ProgramEntityFilter.cs" />
+    <Compile Include="Symbol\SymbolReader.cs" />
+    <Compile Include="TestRunner\NUnitFilterFactory.cs" />
     <Compile Include="Persistance\IPersistance.cs" />
     <Compile Include="ProfilerCommunication\ProfilerRegistration.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Symbol\CecilSymbolManager.cs" />
-    <Compile Include="Symbol\ISymbolManager.cs" />
     <Compile Include="Symbol\SymbolFolder.cs" />
-    <Compile Include="Model\Class.cs" />
-    <Compile Include="Model\IInstrumentationModelBuilder.cs" />
-    <Compile Include="Model\InstrumentationModelBuilder.cs" />
     <Compile Include="Model\InstrumentationPoint.cs" />
-    <Compile Include="Model\Method.cs" />
-    <Compile Include="Model\Module.cs" />
-    <Compile Include="Option\IFilter.cs" />
-    <Compile Include="Option\IOption.cs" />
+    <Compile Include="Setting\ISetting.cs" />
     <Compile Include="ProfilerCommunication\IPCStream.cs" />
     <Compile Include="ProfilerCommunication\Messages.cs" />
     <Compile Include="ProfilerCommunication\ProfilerMessageDispatcher.cs" />
@@ -96,15 +99,14 @@
     <Compile Include="TestModel\TestCaseConventer.cs" />
     <Compile Include="TestModel\TestContainer.cs" />
     <Compile Include="TestModel\TestResult.cs" />
-    <Compile Include="TestRunner\ITestDiscoverer.cs" />
-    <Compile Include="TestRunner\ITestExectuor.cs" />
-    <Compile Include="TestRunner\ITestResultListener.cs" />
-    <Compile Include="TestRunner\ITestRunnerFactory.cs" />
-    <Compile Include="TestRunner\SimpleRunnerFactory.cs" />
-    <Compile Include="TestRunner\SimpleTestRunner.cs" />
-    <Compile Include="TestRunner\ProfileTestRunner.cs" />
-    <Compile Include="TestRunner\RemoteRunnerBase.cs" />
+    <Compile Include="TestRunner\INUFLTestRunner.cs" />
+    <Compile Include="TestRunner\INUFLTestEventListener.cs" />
+    <Compile Include="TestRunner\NUnitTestRunnerWrapper.cs" />
+    <Compile Include="TestRunner\ProcessRunner.cs" />
+    <Compile Include="TestRunner\ProfileRunner.cs" />
+    <Compile Include="TestRunner\RemoteRunner.cs" />
     <Compile Include="TestRunner\RemoteRunnerFactory.cs" />
+    <Compile Include="TestRunner\RunnerFactory.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Key.snk" />
@@ -116,14 +118,6 @@
     <ProjectReference Include="..\NUFL.LocalService\NUFL.Service.csproj">
       <Project>{be123b92-605a-462f-bfb7-5403f0979f67}</Project>
       <Name>NUFL.Service</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\NUnit.Engine\nunit.engine.api\nunit.engine.api.csproj">
-      <Project>{775fad50-3623-4922-97c4-dfb29a8be4c7}</Project>
-      <Name>nunit.engine.api</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\NUnit.Engine\nunit.engine\nunit.engine.csproj">
-      <Project>{372a3447-d657-40ff-a089-77c19fec30c8}</Project>
-      <Name>nunit.engine</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

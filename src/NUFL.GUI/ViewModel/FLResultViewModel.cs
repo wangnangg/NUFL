@@ -16,12 +16,26 @@ using System.Collections.ObjectModel;
 using NUFL.Framework.Analysis;
 using NUFL.Framework.Model;
 using System.ComponentModel;
-
+using NUFL.Framework.Setting;
+using NUFL.Service;
 namespace NUFL.GUI.ViewModel
 {
-    public class FLResultViewModel:INotifyPropertyChanged
+    public class FLResultViewModel:INotifyPropertyChanged, IDisposable
     {
         public event PropertyChangedEventHandler PropertyChanged;
+
+        ICommand _open_setting_cmd = null;
+        public ICommand OpenSettingCommand
+        {
+            get
+            {
+                if(_open_setting_cmd == null)
+                {
+                    _open_setting_cmd = new NUFL.GUI.Command.OpenSettingCommand();
+                }
+                return _open_setting_cmd;
+            }
+        }
 
         public void OnPropertyChanged(PropertyChangedEventArgs e)
         {
@@ -29,12 +43,64 @@ namespace NUFL.GUI.ViewModel
                 PropertyChanged(this, e);
         }
 
-        public FLResultViewModel()
+
+        public ISetting Setting
         {
-            CovProgramChecked = true;
-            SuspMethodChecked = true;
+            get
+            {
+                return _setting;
+            }
         }
 
+        ISetting _setting;
+        public FLResultViewModel(ISetting setting)
+        {
+            _setting = setting;
+            
+
+            this.Function = new FunctionChoice(_setting);
+
+            this.Granularity = new GranularityChoice(_setting);
+
+            GlobalEventManager.Instance.SubscribeEventByName(EventEnum.RankListChanged, OnRankListChanged);
+            GlobalEventManager.Instance.SubscribeEventByName(EventEnum.StatusChanged, OnStatusChanged);
+            _setting.SettingChanged += _setting_SettingChanged;
+        }
+
+        void OnRankListChanged(GlobalEvent @event)
+        {
+            DataSource = @event.Argument as RankList;
+        }
+        void OnStatusChanged(GlobalEvent @event)
+        {
+            Status = @event.Argument as string;
+        }
+        void _setting_SettingChanged(string key, object value)
+        {
+            if(key == "show_background_color")
+            {
+                OnPropertyChanged(new PropertyChangedEventArgs("ShowBackgroundColor"));
+                return;
+            }
+            if(key == "collect_coverage")
+            {
+                OnPropertyChanged(new PropertyChangedEventArgs("CollectCoverage"));
+                return;
+            }
+            if( key == "granularity_mode")
+            {
+                OnPropertyChanged(new PropertyChangedEventArgs("CovResult"));
+                OnPropertyChanged(new PropertyChangedEventArgs("SuspResult"));
+                return;
+            }
+        }
+
+ 
+        public void Dispose()
+        {
+            GlobalEventManager.Instance.UnsubscribeEventByName(EventEnum.RankListChanged, OnRankListChanged);
+            GlobalEventManager.Instance.UnsubscribeEventByName(EventEnum.StatusChanged, OnStatusChanged);
+        }
 
         public IEnumerable<CovEntity> CovResult
         {
@@ -44,7 +110,7 @@ namespace NUFL.GUI.ViewModel
                 {
                     yield break;
                 }
-                Type gran = GetCovGranularity();
+                Type gran = Granularity.GranularityType;
                 if (gran == null)
                 {
                     yield break;
@@ -57,7 +123,19 @@ namespace NUFL.GUI.ViewModel
             }
         }
 
-
+        string _status = "Ready";
+        public string Status
+        {
+            get
+            {
+                return _status;
+            }
+            set
+            {
+                _status = value;
+                OnPropertyChanged(new PropertyChangedEventArgs("Status"));
+            }
+        }
 
         public IEnumerable<SuspEntity> SuspResult
         {
@@ -67,7 +145,7 @@ namespace NUFL.GUI.ViewModel
                 {
                     yield break;
                 }
-                Type gran = GetSuspGranularity();
+                Type gran = Granularity.GranularityType;
                 if (gran == null)
                 {
                     yield break;
@@ -80,229 +158,42 @@ namespace NUFL.GUI.ViewModel
             }
         }
 
-        #region Granularity
 
-
-        Type GetSuspGranularity()
+        public GranularityChoice Granularity
         {
-            if(SuspClassChecked)
-            {
-                return typeof(Class);
-            }
-            if (SuspMethodChecked)
-            {
-                return typeof(Method);
-            }
-            if (SuspStatementChecked)
-            {
-                return typeof(InstrumentationPoint);
-            }
-            return null;
+            set;
+            get;
         }
 
-
-        Type GetCovGranularity()
+        public FunctionChoice Function
         {
-            if (CovProgramChecked)
-            {
-                return typeof(Program);
-            }
-            if (CovModuleChecked)
-            {
-                return typeof(Module);
-            }
-            if (CovClassChecked)
-            {
-                return typeof(Class);
-            }
-            if (CovMethodChecked)
-            {
-                return typeof(Method);
-            }
-            return null;
+            set;
+            get;
         }
 
-
-        bool _cov_program_checked;
-        bool _cov_module_checked;
-        bool _cov_class_checked;
-        bool _cov_method_checked;
-        void ClearCovCheck()
-        {
-            _cov_program_checked = false;
-            _cov_module_checked = false;
-            _cov_class_checked = false;
-            _cov_method_checked = false;
-        }
-        public void OnCovGranularityChanged()
-        {
-            OnPropertyChanged(new PropertyChangedEventArgs("CovProgramChecked"));
-            OnPropertyChanged(new PropertyChangedEventArgs("CovModuleChecked"));
-            OnPropertyChanged(new PropertyChangedEventArgs("CovClassChecked"));
-            OnPropertyChanged(new PropertyChangedEventArgs("CovMethodChecked"));
-            OnPropertyChanged(new PropertyChangedEventArgs("CovResult"));
-        }
-        public bool CovProgramChecked
+        public bool CollectCoverage
         {
             set
             {
-                if(value)
-                {
-                    ClearCovCheck();
-                    _cov_program_checked = value;
-                } else
-                {
-                    _cov_program_checked = value;
-                }
-                OnCovGranularityChanged();
+                _setting.SetSetting("collect_coverage", value);
             }
             get
             {
-                return _cov_program_checked;
-            }
-        }
-        public bool CovModuleChecked
-        {
-            set
-            {
-                if (value)
-                {
-                    ClearCovCheck();
-                    _cov_module_checked = value;
-                }
-                else
-                {
-                    _cov_module_checked = value;
-                }
-                OnCovGranularityChanged();
-            }
-            get
-            {
-                return _cov_module_checked;
-            }
-        }
-        public bool CovClassChecked
-        {
-            set
-            {
-                if (value)
-                {
-                    ClearCovCheck();
-                    _cov_class_checked = value;
-                }
-                else
-                {
-                    _cov_class_checked = value;
-                }
-                OnCovGranularityChanged();
-            }
-            get
-            {
-                return _cov_class_checked;
-            }
-        }
-        public bool CovMethodChecked
-        {
-            set
-            {
-                if (value)
-                {
-                    ClearCovCheck();
-                    _cov_method_checked = value;
-                }
-                else
-                {
-                    _cov_method_checked = value;
-                }
-                OnCovGranularityChanged();
-            }
-            get
-            {
-                return _cov_method_checked;
+                return _setting.GetSetting<bool>("collect_coverage");
             }
         }
 
-
-        
-        bool _susp_class_checked;
-        bool _susp_method_checked;
-        bool _susp_statement_checked;
-        void ClearSuspCheck()
-        {
-            _susp_class_checked = false;
-            _susp_method_checked = false;
-            _susp_statement_checked = false;
-        }
-        public void OnSuspGranularityChanged()
-        {
-            OnPropertyChanged(new PropertyChangedEventArgs("SuspClassChecked"));
-            OnPropertyChanged(new PropertyChangedEventArgs("SuspMethodChecked"));
-            OnPropertyChanged(new PropertyChangedEventArgs("SuspStatementChecked"));
-            OnPropertyChanged(new PropertyChangedEventArgs("SuspResult"));
-        }
-        public bool SuspClassChecked
+        public bool ShowBackgroundColor
         {
             set
             {
-                if (value)
-                {
-                    ClearSuspCheck();
-                    _susp_class_checked = value;
-                }
-                else
-                {
-                    _susp_class_checked = value;
-                }
-                OnSuspGranularityChanged();
+                _setting.SetSetting("show_background_color", value);
             }
             get
             {
-                return _susp_class_checked;
+                return _setting.GetSetting<bool>("show_background_color");
             }
         }
-        public bool SuspMethodChecked
-        {
-            set
-            {
-                if (value)
-                {
-                    ClearSuspCheck();
-                    _susp_method_checked = value;
-                }
-                else
-                {
-                    _susp_method_checked = value;
-                }
-                OnSuspGranularityChanged();
-            }
-            get
-            {
-                return _susp_method_checked;
-            }
-        }
-        public bool SuspStatementChecked
-        {
-            set
-            {
-                if (value)
-                {
-                    ClearSuspCheck();
-                    _susp_statement_checked = value;
-                }
-                else
-                {
-                    _susp_statement_checked = value;
-                }
-                OnSuspGranularityChanged();
-            }
-            get
-            {
-                return _susp_statement_checked;
-            }
-        }
-        #endregion
-
-
 
         RankList _data_source;
         public RankList DataSource 
@@ -318,6 +209,8 @@ namespace NUFL.GUI.ViewModel
                 return _data_source;
             }
         }
+
+
 
 
     }

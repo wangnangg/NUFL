@@ -329,7 +329,9 @@ public:
 		//rewind write stream
 		_write_stream.Rewind();
 		SetEvent(_local_sent_event);
+		ATLTRACE("NUFL.Profiler : Flushing data");
 		WaitForSingleObject(_remote_received_event, INFINITE);
+		ATLTRACE("NUFL.Profiler : Data received.");
 	}
 
 private:

@@ -24,7 +24,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\..\bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -47,7 +47,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ChannelHelper.cs" />
-    <Compile Include="GlobalInstanceServiceBase.cs" />
+    <Compile Include="EventManager.cs" />
+    <Compile Include="GlobalSingletonService.cs" />
+    <Compile Include="GlobalProcessService.cs" />
+    <Compile Include="GlobalService.cs" />
     <Compile Include="GlobalServiceProviderRepository.cs" />
     <Compile Include="ServiceProviderDict.cs" />
     <Compile Include="ServiceManager.cs" />

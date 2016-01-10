@@ -21,19 +21,14 @@ namespace NUFL.Framework.Test.TestRunner
     [TestFixture]
     class ProfileTestRunnerTests
     {
+        //string[] assemblies = new string[] { @"E:\Users\Administrator\Desktop\Download\mathnet-numerics\out\test-debug\Net40\MathNet.Numerics.UnitTests.dll" };
         string[] assemblies = new string[] { @".\MockAssembly\NUFL.TestTarget.dll" };
         Guid guid = Guid.NewGuid();
-        RemoteRunnerFactory _runner_factory;
+        ITestRunnerFactory _runner_factory;
         [TestFixtureSetUp]
         public void Setup()
         {
-            _runner_factory.Key = "test";
-            _runner_factory = (RemoteRunnerFactory)ServiceManager.Instance.GetService(typeof(ITestRunnerFactory), "test");
-
-            NUFLOption option = new NUFLOption();
-            option.FLMethod = "op1";
-            option.Filters = new List<string>() { "+[NUFL*]*" };
-            Service.ServiceManager.Instance.RegisterGlobalInstanceService(typeof(IOption), option, "test");
+            _runner_factory = (ITestRunnerFactory)ServiceManager.Instance.GetService(typeof(ITestRunnerFactory), "test");
         }
 
         [TestFixtureTearDown]
@@ -67,7 +62,25 @@ namespace NUFL.Framework.Test.TestRunner
         
         }
 
-        class Listener:MarshalByRefObject,ITestResultListener
+        [Test]
+        public void TestRunnerDiscovertests()
+        {
+            List<TestCase> tests;
+            using (var _test_runner = new SimpleRunnerFactory().CreateDiscoverer())
+            {
+                _test_runner.Load(assemblies);
+                tests = _test_runner.DiscoverTests();
+                _test_runner.Unload();
+            }
+
+            foreach(var test in tests)
+            {
+                Console.WriteLine(test.DisplayName);
+            }
+
+        }
+
+        class Listener:MarshalByRefObject,INUFLTestEventListener
         {
             
             public void OnTestResult(TestResult result)
@@ -77,6 +90,11 @@ namespace NUFL.Framework.Test.TestRunner
                 Debug.WriteLine(result.ErrorMessage);
                 Debug.WriteLine(result.StackTrace);
                 Debug.WriteLine(result.Duration.Milliseconds);
+            }
+
+            public void OnTestStart(string fullname)
+            {
+                throw new NotImplementedException();
             }
         }
 

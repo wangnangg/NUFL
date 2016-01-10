@@ -26,7 +26,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\..\bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -57,7 +57,8 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Model\FLResultPresenter.cs" />
+    <Compile Include="Command\FLResultViewCommands.cs" />
+    <Compile Include="Command\OpenSettingCommand.cs" />
     <Compile Include="Service References\FLResultPresentationServiceReference\Reference.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -65,6 +66,15 @@
     </Compile>
     <Compile Include="ViewModel\CovEntity.cs" />
     <Compile Include="ViewModel\FLResultViewModel.cs" />
+    <Compile Include="ViewModel\FunctionChoice.cs" />
+    <Compile Include="ViewModel\GranularityChoice.cs" />
+    <Compile Include="ViewModel\SettingViewModel.cs" />
+    <Compile Include="View\SettingView.xaml.cs">
+      <DependentUpon>SettingView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\SettingWindow.xaml.cs">
+      <DependentUpon>SettingWindow.xaml</DependentUpon>
+    </Compile>
     <Page Include="View\FLResultView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -72,6 +82,14 @@
     <Page Include="Themes\Generic.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="View\SettingView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\SettingWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
@@ -118,10 +136,6 @@
       <Project>{be123b92-605a-462f-bfb7-5403f0979f67}</Project>
       <Name>NUFL.Service</Name>
     </ProjectReference>
-    <ProjectReference Include="..\NUFL.Server\NUFL.Server.csproj">
-      <Project>{8e94badf-619d-4a98-be9e-847afb0a9f74}</Project>
-      <Name>NUFL.Server</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
@@ -143,6 +157,32 @@
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Model\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Class.png" />
+    <Resource Include="Images\Module.png" />
+    <Resource Include="Images\Method.png" />
+    <Resource Include="Images\Namespace.png" />
+    <Resource Include="Images\Property.png" />
+    <Resource Include="Images\Refresh.png" />
+    <Resource Include="Images\Program.png" />
+    <Resource Include="Images\ShowCodeCoverageGlyphs.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\level5.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\level1.png" />
+    <Resource Include="Images\level2.png" />
+    <Resource Include="Images\level3.png" />
+    <Resource Include="Images\level4.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\collect_coverage.png" />
+    <Resource Include="Images\background.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

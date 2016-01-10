@@ -18,6 +18,9 @@ namespace NUFL.Framework.TestModel
         public string FullyQualifiedName { get; set; }
         public int LineNumber { get; set; }
         public string AssemblyPath { get; set; }
+        public string ClassName { get; set; }
+        public string MethodName { get; set; }
+        public List<Tuple<string,string>> Properties { set; get; }
     }
 
     //[Serializable]

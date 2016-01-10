@@ -113,14 +113,16 @@
       <Project>{be123b92-605a-462f-bfb7-5403f0979f67}</Project>
       <Name>NUFL.Service</Name>
     </ProjectReference>
-    <ProjectReference Include="..\NUnit.Engine\nunit.engine.api\nunit.engine.api.csproj">
-      <Project>{775fad50-3623-4922-97c4-dfb29a8be4c7}</Project>
-      <Name>nunit.engine.api</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\NUnit.Engine\nunit.engine\nunit.engine.csproj">
-      <Project>{372a3447-d657-40ff-a089-77c19fec30c8}</Project>
-      <Name>nunit.engine</Name>
-    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\Class.png" />
+    <Resource Include="Images\Method.png" />
+    <Resource Include="Images\Module.png" />
+    <Resource Include="Images\Namespace.png" />
+    <Resource Include="Images\Program.png" />
+    <Resource Include="Images\Property.png" />
+    <Resource Include="Images\Refresh.png" />
+    <Resource Include="Images\ShowCodeCoverageGlyphs.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

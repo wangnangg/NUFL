@@ -33,6 +33,12 @@
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
     </Reference>
+    <Reference Include="nunit.engine">
+      <HintPath>..\..\..\nunit-master\bin\Release\nunit.engine.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.engine.api">
+      <HintPath>..\..\..\nunit-master\bin\Release\nunit.engine.api.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
@@ -46,16 +52,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Analysis\FaultLocatorTests.cs" />
-    <Compile Include="Model\InstrumentationModuleBuilderTests.cs" />
+    <Compile Include="Model\ModuleBuildingTests.cs" />
     <Compile Include="ProfilerCommunication\IPCStreamTests.cs" />
-    <Compile Include="ProfilerCommunication\ProfilerMessageDispatcherTests.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Setting\SettingTests.cs" />
     <Compile Include="TestModel\TestConverterTests.cs" />
-    <Compile Include="TestRunner\NunitFilterTests.cs" />
-    <Compile Include="TestRunner\ProfileTestRunnerTests.cs" />
+    <Compile Include="TestRunner\TestRunnerTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NUFL.Framework\NUFL.Framework.csproj">
@@ -70,18 +72,6 @@
       <Project>{be123b92-605a-462f-bfb7-5403f0979f67}</Project>
       <Name>NUFL.Service</Name>
     </ProjectReference>
-    <ProjectReference Include="..\NUFL.Server\NUFL.Server.csproj">
-      <Project>{8e94badf-619d-4a98-be9e-847afb0a9f74}</Project>
-      <Name>NUFL.Server</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\NUnit.Engine\nunit.engine.api\nunit.engine.api.csproj">
-      <Project>{775fad50-3623-4922-97c4-dfb29a8be4c7}</Project>
-      <Name>nunit.engine.api</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\NUnit.Engine\nunit.engine\nunit.engine.csproj">
-      <Project>{372a3447-d657-40ff-a089-77c19fec30c8}</Project>
-      <Name>nunit.engine</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -90,6 +80,7 @@
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Analysis\" />
     <Folder Include="Symbol\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

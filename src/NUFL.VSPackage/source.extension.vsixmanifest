@@ -1,9 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="6657f482-4929-4847-832a-0d32ae71902b" Version="1.0" Language="en-US" Publisher="Buaa" />
-    <DisplayName>NUFL.VSPackage</DisplayName>
-    <Description>A Fault Localization Tool</Description>
+    <Identity Id="6657f482-4929-4847-832a-0d32ae71902b" Version="1.0" Language="en-US" Publisher="Nan Wang" />
+    <DisplayName>UnitFL</DisplayName>
+    <Description xml:space="preserve">UnitFL has three usages. 1) It is a NUnit 3.0 test adapter. 2) It is able to display the coverage of tests written with NUnit 3.0. 3) It tries to locate the fault with the test results and the coresponding coverage information. </Description>
+    <License>License.txt</License>
+    <GettingStartedGuide>main.rtf</GettingStartedGuide>
+    <PreviewImage>screen_shot.png</PreviewImage>
+    <Tags>Unit Testing, Code Coverage, Fault Localization</Tags>
   </Metadata>
   <Installation InstalledByMsi="false">
     <InstallationTarget Id="Microsoft.VisualStudio.Pro" Version="[12.0]" />
@@ -15,10 +19,10 @@
   <Assets>
     <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
     <Asset Type="UnitTestExtension" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
-    <Asset d:Source="Project" Type="x86Agent" d:ProjectName="nunit-agent-x86" Path="|nunit-agent-x86|" />
-    <Asset Type="x64Agent" d:Source="Project" d:ProjectName="nunit-agent" Path="|nunit-agent|" />
     <Asset Type="x86Profiler" d:Source="File" Path="x86\NUFL.Profiler.dll" d:VsixSubPath="x86" />
     <Asset Type="x64Profiler" d:Source="File" Path="x64\NUFL.Profiler.dll" d:VsixSubPath="x64" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
+    <Asset Type="Agent" d:Source="Project" d:ProjectName="NUFL.Agent" Path="|NUFL.Agent|" />
+    <Asset Type="Agent" d:Source="Project" d:ProjectName="NUFL.Agent.x86" Path="|NUFL.Agent.x86|" />
   </Assets>
 </PackageManifest>

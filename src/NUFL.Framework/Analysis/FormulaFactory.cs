@@ -13,7 +13,7 @@ namespace NUFL.Framework.Analysis
         {
             return (entry) =>
                 {
-                    return entry.a_ef - entry.a_ep / 100;
+                    return (float)entry.a_ef - (float)entry.a_ep / (float)100;
                 };
         }
     }

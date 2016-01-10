@@ -12,14 +12,16 @@ namespace NUFL.Service
 {
     public class ServiceManager:IDisposable
     {
-        Dictionary<string, MarshalByRefObject> _local_service_instance;
+        Dictionary<string, MarshalByRefObject> _global_service_instance;
+        Dictionary<string, object> _local_service_instance;
         TcpChannel _channel;
         int _max_connection = 5;
         GlobalServiceProviderRepository _repository;
         int _port = 0;
         public ServiceManager(string repository_name)
         {
-            _local_service_instance = new Dictionary<string, MarshalByRefObject>();
+            _global_service_instance = new Dictionary<string, MarshalByRefObject>();
+            _local_service_instance = new Dictionary<string, object>();
             _repository = new GlobalServiceProviderRepository(repository_name);
         }
         static ServiceManager _instance = null;
@@ -47,15 +49,21 @@ namespace NUFL.Service
             
         }
 
-        public void RegisterGlobalInstanceService(Type service_interface, GlobalInstanceServiceBase instance, string nmspc = "")
+        public void RegisterGlobalService(Type service_interface, GlobalService instance, string nmspc = "")
         {
             Online();
             string fullname = GetFullName(nmspc, service_interface);
-            _local_service_instance[fullname] = instance;
+            _global_service_instance[fullname] = instance;
             RemotingServices.Marshal(instance, fullname);
             //report on the global repository
             _repository[fullname] = _port;
             Console.WriteLine("Provide {0} service on {1}", service_interface.FullName, _port);
+        }
+
+        public void RegisterLocalService(Type service_interface, object instance, string nmspc = "")
+        {
+            string fullname = GetFullName(nmspc, service_interface);
+            _local_service_instance[fullname] = instance;
         }
 
         private string GetFullName(string nmspc, Type service_interface)
@@ -63,17 +71,23 @@ namespace NUFL.Service
             return nmspc + "." + service_interface.FullName;
         }
 
+        public void UnregisterLocalService(Type service_interface, string nmspc = "")
+        {
+             string fullname = GetFullName(nmspc, service_interface);
+            _local_service_instance.Remove(fullname);
+        }
+
         public void UnregisterGlobalService(Type service_interface, string nmspc = "")
         {
             Online();
             string fullname = GetFullName(nmspc, service_interface);
-            if (_local_service_instance.ContainsKey(fullname))
+            if (_global_service_instance.ContainsKey(fullname))
             {
                 //report on the global repository
                 _repository.Remove(fullname);
 
-                var obj = _local_service_instance[fullname];
-                _local_service_instance.Remove(fullname);
+                var obj = _global_service_instance[fullname];
+                _global_service_instance.Remove(fullname);
                 RemotingServices.Disconnect(obj);
                 
             }
@@ -82,13 +96,17 @@ namespace NUFL.Service
         public object GetService(Type service_interface, string nmspc = "")
         {
             string fullname = GetFullName(nmspc, service_interface);
-            if (_local_service_instance.ContainsKey(fullname))
+            if(_local_service_instance.ContainsKey(fullname))
             {
                 return _local_service_instance[fullname];
             }
+            if (_global_service_instance.ContainsKey(fullname))
+            {
+                return _global_service_instance[fullname];
+            }
             //find in repository
             Online();
-            GlobalInstanceServiceBase proxy = null;
+            GlobalService proxy = null;
             int provider_port = _repository[fullname];
             if(provider_port > 0)
             {
@@ -96,7 +114,7 @@ namespace NUFL.Service
                 try
                 {
                     //  proxy = (GlobalServiceBase)RemotingServices.Connect(service_interface, uri);
-                    proxy = (GlobalInstanceServiceBase)Activator.GetObject(service_interface, uri);
+                    proxy = (GlobalService)Activator.GetObject(service_interface, uri);
                     proxy.Confirmation();
                 }
                 catch (Exception e)
@@ -121,10 +139,10 @@ namespace NUFL.Service
             {
                 ChannelHelper.SafeReleaseChannel(_channel);
             }
-            foreach(var key in _local_service_instance.Keys)
+            foreach(var key in _global_service_instance.Keys)
             {
                 _repository.Remove(key);
-                var obj = _local_service_instance[key];
+                var obj = _global_service_instance[key];
                 //its important that we disconnect all the objects;
                 RemotingServices.Disconnect(obj);
             }

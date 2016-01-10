@@ -25,12 +25,13 @@ namespace NUFL.Framework.Symbol
         private AssemblyDefinition _sourceAssembly;
         private readonly Dictionary<int, MethodDefinition> _methodMap = new Dictionary<int, MethodDefinition>();
         private readonly IEnumerable<string> _pdb_directories;
-
-        public CecilSymbolManager(IOption commandLine, IFilter filter, IEnumerable<string> pdb_directories)
+        Program _program;
+        public CecilSymbolManager(IOption commandLine, IFilter filter, IEnumerable<string> pdb_directories, Program program)
         {
             _commandLine = commandLine;
             _filter = filter;
             _pdb_directories = pdb_directories;
+            _program = program;
         }
 
         public string ModulePath { get; private set; }
@@ -340,7 +341,7 @@ namespace NUFL.Framework.Symbol
             UInt32 ordinal = 0;
             var first_instruction = methodDefinition.Body.Instructions.FirstOrDefault();
             SourceFile file = null;
-            if(first_instruction != null)
+            if(first_instruction != null && first_instruction.SequencePoint != null)
             {
                 file = SourceFile.GetSourceFile(first_instruction.SequencePoint.Document.Url);
             }
@@ -350,6 +351,8 @@ namespace NUFL.Framework.Symbol
                 {
                     var sp = instruction.SequencePoint;
                     var ip = new InstrumentationPoint();
+                    ip.UniqueSequencePoint = (uint)_program.Points.Count;
+                    _program.Points.Add(ip);
                     ip.Offset = instruction.Offset;
                     ip.Ordinal = ordinal++;
                     ip.SourcePosition = new Position(file, sp.StartLine, sp.StartColumn, sp.EndLine, sp.EndColumn);

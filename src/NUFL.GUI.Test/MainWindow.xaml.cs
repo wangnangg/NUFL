@@ -25,9 +25,7 @@ using NUFL.Framework.Analysis;
 using NUFL.Framework.Model;
 using NUFL.Framework.ProfilerCommunication;
 using NUFL.Framework.TestModel;
-using NUnit.Engine;
 using System.Threading;
-using NUFL.GUI.Model;
 using NUFL.GUI.ViewModel;
 using NUFL.Service;
 namespace NUFL.GUI.Test
@@ -37,23 +35,22 @@ namespace NUFL.GUI.Test
     /// </summary>
     public partial class MainWindow : Window
     {
-        FLResultPresenter presenter = new FLResultPresenter();
-        FLResultViewModel view_model = new FLResultViewModel();
-        NUFLOption option;
+        FLResultViewModel view_model;
+        RemoteRunnerFactory _runner_factory;
         public void Setup()
         {
+            var Option = new NUFLSetting();
+            Option.SetSetting("collect_coverage", true);
+            ServiceManager.Instance.RegisterLocalService(typeof(ISetting), Option);
+            _runner_factory = new RemoteRunnerFactory() 
+            {
+                Option = Option,
+                
+            };
+            ServiceManager.Instance.RegisterGlobalService(typeof(IRunnerFactory), _runner_factory, "test");
+
+            view_model = new FLResultViewModel(Option);
             _result_view.DataContext = view_model;
-            option = new NUFLOption();
-            option.FLMethod = "op1";
-            option.Filters = new List<string>() { "+[*]*" };
-            presenter.ViewModel = view_model;
-           // ServiceManager.Instance.RegisterGlobalInstanceService(typeof(IOption), option, "");
-            //ServiceManager.Instance.RegisterGlobalInstanceService(typeof(IFLResultPresenter), presenter, "");  
-            ServiceManager.Instance.RegisterGlobalInstanceService(typeof(IOption), option, "test");
-            ServiceManager.Instance.RegisterGlobalInstanceService(typeof(IFLResultPresenter), presenter, "test");  
-
-
-
         }
         public MainWindow()
         {
@@ -63,6 +60,17 @@ namespace NUFL.GUI.Test
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             Setup();
+        }
+
+
+        private void CommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+          
+        }
+
+        private void CommandBinding_Executed_1(object sender, ExecutedRoutedEventArgs e)
+        {
+
         }
        
 

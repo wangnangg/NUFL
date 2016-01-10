@@ -6,3 +6,8 @@
 src/NUFL.Profiler/Win32/Debug/*
 bin/
 *.cache
+Release
+Debug
+*.suo
+*.sdf
+obj

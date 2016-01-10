@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace NUFL.Framework.Model
 {
-    public abstract class ProgramEntityBase:MarshalByRefObject
+    public abstract class ProgramEntityBase 
     {
-        float? _susp;
+        protected float? _susp;
         public virtual float Susp
         {
             protected set
@@ -19,11 +19,12 @@ namespace NUFL.Framework.Model
             {
                 if (!_susp.HasValue)
                 {
-                    if (DirectChildrenSortedBySusp.Count > 0)
+                    foreach(var child in DirectChildrenSortedBySusp)
                     {
-                        _susp = DirectChildrenSortedBySusp[0].Susp;
+                        _susp = child.Susp;
+                        break;
                     }
-                    else
+                    if(!_susp.HasValue)
                     {
                         _susp = float.MinValue;
                     }
@@ -32,12 +33,35 @@ namespace NUFL.Framework.Model
             }
         }
 
-        public virtual string DisplayName 
+        protected int? _susp_level;
+        public int SuspLevel
         {
-            get { return "ProgramEntity"; } 
+            set
+            {
+                _susp_level = value;
+            }
+            get
+            {
+                if (!_susp_level.HasValue)
+                {
+                    foreach (var child in DirectChildrenSortedBySusp)
+                    {
+                        _susp_level = child.SuspLevel;
+                        break;
+                    }
+                    if (!_susp_level.HasValue)
+                    {
+                        _susp_level = 1;
+                    }
+                }
+                return _susp_level.Value;
+            }
         }
 
-       
+        public virtual string DisplayName
+        {
+            get { return "ProgramEntity"; }
+        }
 
         public virtual void Reset(bool recursive)
         {
@@ -55,12 +79,19 @@ namespace NUFL.Framework.Model
             }
         }
 
+        public ProgramEntityBase Parent { private set; get; }
 
-        static List<ProgramEntityBase> EmptyList = new List<ProgramEntityBase>();
-       
+        public ProgramEntityBase(ProgramEntityBase parent)
+        {
+            Parent = parent;
+        }
+
+
+        protected static List<ProgramEntityBase> EmptyList = new List<ProgramEntityBase>();
+
         public virtual IEnumerable<ProgramEntityBase> DirectChildren
         {
-            get 
+            get
             {
                 return EmptyList;
             }
@@ -69,20 +100,27 @@ namespace NUFL.Framework.Model
         private List<ProgramEntityBase> _children_sorted_by_susp;
         public List<ProgramEntityBase> DirectChildrenSortedBySusp
         {
-            get 
+            get
             {
-                if(_children_sorted_by_susp == null)
+                if (_children_sorted_by_susp == null)
                 {
                     _children_sorted_by_susp = GetDirectChildrenSortedBySusp();
                 }
                 return _children_sorted_by_susp;
             }
         }
+        protected virtual List<ProgramEntityBase> GetDirectChildrenSortedByCov()
+        {
+            List<ProgramEntityBase> children = new List<ProgramEntityBase>(DirectChildren);
+            children.Sort((x, y) => { return x.CoveragePercent.CompareTo(y.CoveragePercent); });
+            return children;
+        }
         protected virtual List<ProgramEntityBase> GetDirectChildrenSortedBySusp()
         {
-            return EmptyList;
+            List<ProgramEntityBase> children = new List<ProgramEntityBase>(DirectChildren);
+            children.Sort((x, y) => { return -x.Susp.CompareTo(y.Susp); });
+            return children;
         }
-
         private List<ProgramEntityBase> _children_sorted_by_cov;
         public List<ProgramEntityBase> DirectChildrenSortedByCov
         {
@@ -95,11 +133,6 @@ namespace NUFL.Framework.Model
                 return _children_sorted_by_cov;
             }
         }
-        protected virtual List<ProgramEntityBase> GetDirectChildrenSortedByCov()
-        {
-            return EmptyList;
-        }
-
 
         //the part pertinent to coverage
         private int _covered_leaf_children_count;
@@ -107,10 +140,10 @@ namespace NUFL.Framework.Model
         {
             get
             {
-                if( _covered_leaf_children_count < 0)
+                if (_covered_leaf_children_count < 0)
                 {
                     _covered_leaf_children_count = 0;
-                    foreach(var child in DirectChildren)
+                    foreach (var child in DirectChildren)
                     {
                         _covered_leaf_children_count += child.CoveredLeafChildrenCount;
                     }
@@ -140,19 +173,30 @@ namespace NUFL.Framework.Model
         {
             get
             {
-                if(LeafChildrenCount == 0)
+                if (LeafChildrenCount == 0)
                 {
                     return 1;
-                } else
+                }
+                else
                 {
                     return (float)CoveredLeafChildrenCount / (float)LeafChildrenCount;
 
                 }
-                
+
             }
         }
 
-
-        public Position SourcePosition { get; set; }
+        bool _skipped = false;
+        public bool Skipped
+        {
+            set
+            {
+                _skipped = value;
+            }
+            get
+            {
+                return _skipped;
+            }
+        }
     }
 }

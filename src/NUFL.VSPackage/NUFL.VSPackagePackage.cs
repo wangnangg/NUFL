@@ -14,7 +14,7 @@ using NUFL.Framework.Setting;
 using NUFL.Framework.Analysis;
 using NUFL.Framework.Persistance;
 using System.Collections.Generic;
-using NUFL.Server;
+using Buaa.NUFL_VSPackage.View;
 namespace Buaa.NUFL_VSPackage
 {
     /// <summary>
@@ -41,9 +41,43 @@ namespace Buaa.NUFL_VSPackage
     [ProvideAutoLoad(UIContextGuids80.SolutionExists)]
     public sealed class NUFL_VSPackagePackage : Package
     {
-        NUFLOption option;
-        public static EnvDTE.DTE DTE;
-        public static EnvDTE.SolutionEvents solution_events;
+        static EnvDTE.DTE DTE { set; get; }
+        static EnvDTE.SolutionEvents SolutionEvents { set; get; }
+        static string _solution_key = "";
+        NUFLSetting Option = new NUFLSetting();
+        public static string SolutionKey 
+        {
+            get
+            {
+                return _solution_key;
+            }
+            set
+            {
+                if(_solution_key == value)
+                {
+                    return;
+                }
+                if(value == "")
+                {
+                    if (SolultionKeyCleared != null)
+                    {
+                        SolultionKeyCleared(_solution_key);
+                    }
+                    _solution_key = value;
+                } else
+                {
+                    _solution_key = value;
+                    if (SolutionKeySet != null)
+                    {
+                        SolutionKeySet(_solution_key);
+                    }
+                }
+                
+                
+            }
+        }
+        public static event Action<string> SolutionKeySet;
+        public static event Action<string> SolultionKeyCleared;
         RemoteRunnerFactory _runner_factory;
         /// <summary>
         /// Default constructor of the package.
@@ -55,10 +89,19 @@ namespace Buaa.NUFL_VSPackage
         public NUFL_VSPackagePackage()
         {
             Debug.WriteLine(string.Format(CultureInfo.CurrentCulture, "Entering constructor for: {0}", this.ToString()));
-            option = new NUFLOption();
-            option.FLMethod = "op1";
-            option.Filters = new List<string>() { "+[*]*" };
-            _runner_factory = new RemoteRunnerFactory();
+            _runner_factory = new RemoteRunnerFactory()
+            {
+                Option = Option
+            };
+            ServiceManager.Instance.RegisterLocalService(typeof(ISetting), Option);
+            SolutionKeySet += (key) => 
+                {
+                    ServiceManager.Instance.RegisterGlobalService(typeof(IRunnerFactory), _runner_factory, key);
+                };
+            SolultionKeyCleared += (key) =>
+                {
+                    ServiceManager.Instance.UnregisterGlobalService(typeof(IRunnerFactory), key);
+                };
         }
 
 
@@ -98,7 +141,7 @@ namespace Buaa.NUFL_VSPackage
             base.Initialize();
 
             DTE = GetService(typeof(EnvDTE.DTE)) as EnvDTE.DTE;
-            solution_events = DTE.Events.SolutionEvents;
+            SolutionEvents = DTE.Events.SolutionEvents;
             // Add our command handlers for menu (commands must exist in the .vsct file)
             OleMenuCommandService mcs = GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
             if ( null != mcs )
@@ -114,15 +157,14 @@ namespace Buaa.NUFL_VSPackage
             StartNUFLService();
         }
 
-        string solution_key;
 
         private void StartNUFLService()
         {
 
-            solution_events.Opened += OnSolutionOpened;
-            solution_events.BeforeClosing += OnSolutionClosing;
-            solution_key = Helpers.IDEHelper.GetCurrentSolutionPath();
-            if(solution_key != "")
+            SolutionEvents.Opened += OnSolutionOpened;
+            SolutionEvents.BeforeClosing += OnSolutionClosing;
+            SolutionKey = GetSolutionKey();
+            if (SolutionKey != "")
             {
                 OnSolutionOpened();
             }
@@ -131,23 +173,28 @@ namespace Buaa.NUFL_VSPackage
 
         private void OnSolutionClosing()
         {
-            ServiceManager.Instance.UnregisterGlobalService(typeof(IOption), solution_key);
-            ServiceManager.Instance.UnregisterGlobalService(typeof(ITestRunnerFactory), solution_key);
-            _runner_factory.Key = "";
+            Option.SetBackup("", "");
+            SolutionKey = "";
+
         }
 
 
         private void OnSolutionOpened()
         {
-            solution_key = GetSolutionKey(DTE);
-            ServiceManager.Instance.RegisterGlobalInstanceService(typeof(IOption), option, solution_key);
-            _runner_factory.Key = solution_key;
-            ServiceManager.Instance.RegisterGlobalInstanceService(typeof(ITestRunnerFactory), _runner_factory, solution_key);
+            string solution_config_name = Helpers.IDEHelper.GetCurrentSolutionPath() + ".nufl.config";
+            Option.SetBackup(solution_config_name, "");
+            SolutionKey = GetSolutionKey();
         }
 
-        private string GetSolutionKey(EnvDTE.DTE dte)
+        private string GetSolutionKey()
         {
-            return new System.IO.FileInfo(Helpers.IDEHelper.GetCurrentSolutionPath()).Directory.FullName + "\\";
+            string solution_path = Helpers.IDEHelper.GetCurrentSolutionPath();
+            if (solution_path == "")
+            {
+                return "";
+            }
+
+            return new System.IO.FileInfo(solution_path).Directory.FullName + "\\";
         }
         #endregion
 

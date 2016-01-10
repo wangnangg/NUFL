@@ -4,39 +4,77 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NUnit.Engine;
+using NUnit.Engine.Internal;
 using NUFL.Framework.TestModel;
-
+using System.Xml;
+using NUFL.Framework.Model;
+using NUFL.Framework.Setting;
+using NUnit.Engine.Internal;
+using NUnit.Engine.Services;
 namespace NUFL.Framework.TestRunner
 {
-    class SimpleTestRunner:RemoteRunnerBase,ITestDiscoverer,ITestExectuor,ITestEventListener
+    public class SimpleTestRunner:INUFLTestRunner,ITestEventListener
     {
         TestEngine _engine;
         ITestRunner _runner;
+        List<string> _pdb_directories;
         public SimpleTestRunner()
         {
-            _engine = new TestEngine();
+            TestEngine engine = new TestEngine();
+
+            var settingsService = new SettingsService(false);
+            engine.Services.Add(settingsService);
+            engine.Services.Add(new ProjectService());
+            engine.Services.Add(new DomainManager());
+            engine.Services.Add(new InProcessTestRunnerFactory());
+            engine.Services.Add(new DriverService());
+
+            engine.Initialize();
+
+            _engine = engine;
         }
         public void Load(IEnumerable<string> assemblies)
         {
             TestPackage package = new TestPackage(new List<string>(assemblies));
+            _pdb_directories = GetPDBDirectories(assemblies);
             _runner = _engine.GetRunner(package);
             _runner.Load();
         }
 
         public void Unload()
         {
-            try
-            {
-                _runner.Unload();
-                _runner.Dispose();
-            }
-            catch (Exception e) {}
+            _runner.Unload();
+            _runner.Dispose();
         }
 
         public List<TestCase> DiscoverTests()
         {
-            List<TestCase> test_cases = TestConverters.ConvertFromNUnitTestCase(_runner.Explore(TestFilter.Empty));
+            List<TestCase> test_cases = TestConverters.ConvertFromNUnitTestCases(_runner.Explore(TestFilter.Empty));
+            Program program = new Program(new ProgramEntityFilter(), _pdb_directories);
+            foreach (var tc in test_cases)
+            {
+                program.AddModule(tc.AssemblyPath, "");
+                SourceFile file;
+                int? line;
+                program.FindMethodSourcePosition(tc.AssemblyPath, tc.ClassName, tc.MethodName, out file, out line);
+                if (file != null && line != null)
+                {
+                    tc.CodeFilePath = file.FullName;
+                    tc.LineNumber = line.Value;
+                }
+            }
             return test_cases;
+        }
+
+        private List<string> GetPDBDirectories(IEnumerable<string> assemblies)
+        {
+            List<string> paths = new List<string>();
+            foreach (var ass in assemblies)
+            {
+                paths.Add(new System.IO.FileInfo(ass).DirectoryName);
+            }
+            List<string> distinct_paths = new List<string>(paths.Distinct<string>());
+            return distinct_paths;
         }
 
         public override void Dispose()
@@ -46,32 +84,53 @@ namespace NUFL.Framework.TestRunner
         }
 
 
-        ITestResultListener _listener;
+        INUFLTestEventListener _listener;
 
-        public void RunTests(IEnumerable<string> full_qualified_names, ITestResultListener listener)
+        public void RunTests(IEnumerable<string> full_qualified_names, INUFLTestEventListener listener)
         {
             NameFilter filter = new NameFilter(full_qualified_names);
             RunTests(filter, listener);
         }
 
-        public void RunAllTests(ITestResultListener listener)
+        public void RunAllTests(INUFLTestEventListener listener)
         {
             TestFilter filter = TestFilter.Empty;
             RunTests(filter, listener);
         }
 
-        void RunTests(TestFilter filter, ITestResultListener listener)
+        void RunTests(TestFilter filter, INUFLTestEventListener listener)
         {
             _listener = listener;
             _runner.Run(this, filter);
         }
 
+        public void StopRun()
+        {
+            _runner.StopRun(true);
+        }
+
 
         public void OnTestEvent(string report)
         {
+            var node = XmlHelper.CreateXmlNode(report);
+            switch (node.Name)
+            {
+                case "start-test":
+                    TestStarted(node);
+                    break;
+
+                case "test-case":
+                    TestFinished(node);
+                    break;
+            }
+
+        }
+
+        private void TestFinished(XmlNode node)
+        {
             try
             {
-                TestResult result = TestConverters.ConvertFromNUnitTestResult(report);
+                TestResult result = TestConverters.ConvertFromNUnitTestResult(node);
                 if (_listener != null)
                 {
                     _listener.OnTestResult(result);
@@ -79,8 +138,25 @@ namespace NUFL.Framework.TestRunner
             }
             catch (Exception e)
             {
-               // System.Diagnostics.Debug.WriteLine(e.Message);
+                System.Diagnostics.Debug.WriteLine(e.Message);
             }
         }
+
+        private void TestStarted(XmlNode node)
+        {
+            try
+            {
+                string fullname = TestConverters.ConvertFromNUnitTestCaseStart(node);
+                if (_listener != null)
+                {
+                    _listener.OnTestStart(fullname);
+                }
+            }
+            catch (Exception e)
+            {
+                System.Diagnostics.Debug.WriteLine(e.Message);
+            }
+        }
+
     }
 }

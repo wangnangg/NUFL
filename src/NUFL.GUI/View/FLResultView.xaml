@@ -4,24 +4,27 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:NUFL.GUI.ViewModel"
-             mc:Ignorable="d">
+             xmlns:mycmd="clr-namespace:NUFL.GUI.Command"
+             mc:Ignorable="d" >
     <UserControl.Resources>
         <HierarchicalDataTemplate x:Key="CovEntityTemplate" DataType="{x:Type local:CovEntity}"  ItemsSource="{Binding Path=Children}">
             <StackPanel>
-                <Button>
+                <Button Command="mycmd:FLResultViewCommands.Navigate"  CommandParameter="{Binding Position}">
                     <Button.Template>
                         <ControlTemplate TargetType="{x:Type Button}">
                             <StackPanel Orientation="Horizontal">
-                                <Canvas Width="20">
-                                    <Rectangle Canvas.Top="10" Fill="GreenYellow" Stroke="GreenYellow" Height="10" Width="20">
-
-                                    </Rectangle>
-                                    <Rectangle Canvas.Top="10" Fill="Green" Stroke="Green" Height="10" Width="20">
-                                        <Rectangle.RenderTransform>
-                                            <ScaleTransform ScaleX="{Binding Path=Percentage}"></ScaleTransform>
-                                        </Rectangle.RenderTransform>
-                                    </Rectangle>
-                                </Canvas>
+                                <Border Width="6" Height="12" BorderThickness="1" BorderBrush="Green">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0.5,1" EndPoint="0.5,0">
+                                            <GradientStop Color="Green" Offset="0"/>
+                                            <GradientStop Color="Green" Offset="{Binding Percentage}"/>
+                                            <GradientStop Color="White" Offset="{Binding Percentage}"/>
+                                            <GradientStop Color="White" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                </Border>
+                                <Label Content="{Binding Path=PercentageString}" Margin="0,0,3,0"></Label>
+                                <Image Source="{Binding Path=ImagePath}"></Image>
                                 <Label Content="{Binding Path=Name}"></Label>
                             </StackPanel>
                         </ControlTemplate>
@@ -31,20 +34,12 @@
         </HierarchicalDataTemplate>
         <HierarchicalDataTemplate x:Key="SuspEntityTemplate" DataType="{x:Type local:SuspEntity}"  ItemsSource="{Binding Path=Children}">
             <StackPanel>
-                <Button>
+                <Button Command="mycmd:FLResultViewCommands.Navigate"  CommandParameter="{Binding Position}">
                     <Button.Template>
                         <ControlTemplate TargetType="{x:Type Button}">
                             <StackPanel Orientation="Horizontal">
-                                <Canvas Width="20">
-                                    <Rectangle Canvas.Top="10" Fill="GreenYellow" Stroke="GreenYellow" Height="10" Width="20">
-
-                                    </Rectangle>
-                                    <Rectangle Canvas.Top="10" Fill="Green" Stroke="Green" Height="10" Width="20">
-                                        <Rectangle.RenderTransform>
-                                            <ScaleTransform ScaleX="{Binding Path=Percentage}"></ScaleTransform>
-                                        </Rectangle.RenderTransform>
-                                    </Rectangle>
-                                </Canvas>
+                                <Image Source="{Binding Path=LevelImagePath}" Margin="0,0,3,0"></Image>
+                                <Image Source="{Binding Path=ImagePath}"></Image>
                                 <Label Content="{Binding Path=Name}"></Label>
                             </StackPanel>
                         </ControlTemplate>
@@ -53,42 +48,57 @@
             </StackPanel>
         </HierarchicalDataTemplate>
     </UserControl.Resources>
-    <DockPanel>
-        <Expander DockPanel.Dock="Top" Header="Filters">
-            <StackPanel Orientation="Vertical">
-                <DockPanel>
-                    <Label DockPanel.Dock="Left" Content="Inclusion:"/>
-                    <TextBox DockPanel.Dock="Right" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"> </TextBox>
-                </DockPanel>
-                <DockPanel>
-                    <Label Content="Exclusion:"/>
-                    <TextBox ></TextBox>
-                </DockPanel>
-            </StackPanel>
-           
-        </Expander>
-        <TabControl DockPanel.Dock="Bottom">
-            <TabItem  Header="Coverage">
-                <DockPanel>
-                    <UniformGrid DockPanel.Dock="Top"  Rows="1" Columns="4" >
-                        <RadioButton IsChecked="{Binding Path=CovProgramChecked, Mode=TwoWay}" Content="Program" />
-                        <RadioButton IsChecked="{Binding Path=CovModuleChecked, Mode=TwoWay}"  Content="Module" />
-                        <RadioButton IsChecked="{Binding Path=CovClassChecked, Mode=TwoWay}"  Content="Class" />
-                        <RadioButton IsChecked="{Binding Path=CovMethodChecked, Mode=TwoWay}" Content="Method" />
-                    </UniformGrid>
-                    <TreeView DockPanel.Dock="Bottom" ItemTemplate="{StaticResource CovEntityTemplate}" ItemsSource="{Binding Path=CovResult}" />
-                </DockPanel>
-            </TabItem>
-            <TabItem Header="Fault Localization">
-                <DockPanel>
-                    <UniformGrid DockPanel.Dock="Top"  Rows="1" Columns="4" >
-                        <RadioButton IsChecked="{Binding Path=SuspClassChecked, Mode=TwoWay}"  Content="Class" />
-                        <RadioButton IsChecked="{Binding Path=SuspMethodChecked, Mode=TwoWay}"  Content="Method" />
-                        <RadioButton IsChecked="{Binding Path=SuspStatementChecked, Mode=TwoWay}"  Content="Statement" />
-                    </UniformGrid>
-                    <TreeView DockPanel.Dock="Bottom" ItemTemplate="{StaticResource SuspEntityTemplate}" ItemsSource="{Binding Path=SuspResult}" />
-                </DockPanel>
-            </TabItem>
-        </TabControl>
-    </DockPanel>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="20*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="30*" />
+            <RowDefinition Height="Auto"  />
+        </Grid.RowDefinitions>
+        <ToolBar Grid.Row="0" ToolBarTray.IsLocked="True" DockPanel.Dock="Top" VerticalAlignment="Top" Height="25">
+            <ToggleButton ToolTip="Enable profiling for coverage." IsChecked="{Binding Path=CollectCoverage,Mode=TwoWay}">
+                <Image Source="/NUFL.GUI;Component/Images/collect_coverage.png"/>
+            </ToggleButton>
+            <ToggleButton ToolTip="Enable coloration of source code." IsChecked="{Binding Path=ShowBackgroundColor,Mode=TwoWay}">
+                <Image Source="/NUFL.GUI;Component/Images/background.png"></Image>
+            </ToggleButton>
+            <ComboBox  ToolTip="Choose a perspective."  BorderThickness="0" DataContext="{Binding Path=Function}" SelectedIndex="{Binding Path=Index, Mode=TwoWay}"  ItemsSource="{Binding Path=Items}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate DataType="{x:Type local:FunctionItem}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding Path=Name}"></TextBlock>
+                        </StackPanel>
+
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <ComboBox ToolTip="Choose a granularity." BorderThickness="0" DataContext="{Binding Path=Granularity}" SelectedIndex="{Binding Path=Index, Mode=TwoWay}"  ItemsSource="{Binding Path=Items}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate DataType="{x:Type local:GranularityItem}">
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="{Binding Path=ImagePath}"></Image>
+                            <TextBlock Text="{Binding Path=Name}"></TextBlock>
+                        </StackPanel>
+
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+
+            <Button Command="{Binding Path=OpenSettingCommand}" CommandParameter="{Binding Path=Setting}">
+                <Image Source="/NUFL.GUI;Component/Images/Property.png"></Image>
+            </Button>
+            
+        </ToolBar>
+        <Grid Grid.Row="1"  DockPanel.Dock="Top">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <TreeView Visibility="{Binding Path=Function.CovVisible}" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling"  DockPanel.Dock="Top" ItemTemplate="{StaticResource CovEntityTemplate}" ItemsSource="{Binding Path=CovResult}" />
+            <TreeView Visibility="{Binding Path=Function.SuspVisible}"  VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling"  DockPanel.Dock="Top" ItemTemplate="{StaticResource SuspEntityTemplate}" ItemsSource="{Binding Path=SuspResult}" />
+        </Grid>
+        <Label Grid.Row="2" Content="{Binding Path=Status}"/>
+    </Grid>
 </UserControl>

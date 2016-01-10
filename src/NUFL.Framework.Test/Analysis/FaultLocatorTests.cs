@@ -15,7 +15,6 @@ using System.Diagnostics;
 using NUFL.GUI.ViewModel;
 using NUFL.Service;
 using System.Collections.ObjectModel;
-using NUFL.GUI.Model;
 namespace NUFL.Framework.Test.Analysis
 {
     [TestFixture]

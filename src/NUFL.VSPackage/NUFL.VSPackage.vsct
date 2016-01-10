@@ -59,9 +59,9 @@
 
       <Button guid="guidNUFL_VSPackageCmdSet" id="cmdidResult" priority="0x0100" type="Button">
         <Parent guid="guidSHLMainMenu" id="IDG_VS_WNDO_OTRWNDWS1"/>
-        <Icon guid="guidImages" id="bmpPic2" />
+        <Icon guid="buttonImage" id="bmpPic1" />
         <Strings>
-          <ButtonText>NUFL Result</ButtonText>
+          <ButtonText>UnitFL Result</ButtonText>
         </Strings>
       </Button>
 
@@ -76,7 +76,7 @@
             inside a button definition. An important aspect of this declaration is that the element id 
             must be the actual index (1-based) of the bitmap inside the bitmap strip. -->
       <Bitmap guid="guidImages" href="Resources\Images.png" usedList="bmpPic1, bmpPic2, bmpPicSearch, bmpPicX, bmpPicArrows"/>
-      
+      <Bitmap guid="buttonImage" href="Resources\collect_coverage.png" usedList="bmpPic1"/>
     </Bitmaps>
  
   </Commands>
@@ -105,6 +105,9 @@
       <IDSymbol name="bmpPicX" value="4" />
       <IDSymbol name="bmpPicArrows" value="5" />
       <IDSymbol name="bmpPicStrikethrough" value="6" />
+    </GuidSymbol>
+    <GuidSymbol name="buttonImage" value="{B9A86F62-53CF-4564-AA55-6C252C23E333}" >
+      <IDSymbol name="bmpPic1" value="1" />
     </GuidSymbol>
   </Symbols>
 

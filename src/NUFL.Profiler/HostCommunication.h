@@ -23,12 +23,13 @@ private:
 	std::vector<bool> hit_account;
 	std::unordered_map<std::wstring, TrackModuleState> module_track_cache;
 	std::set<std::pair<std::wstring, int>> test_method_invokers;
-	
+	bool _profiler_task_finished = false;
 public:
-	HANDLE data_flush;
-	HANDLE data_flushed;
+	HANDLE task_finish;
+	HANDLE task_finished;
 	HANDLE flush_thread_terminate;
 	HANDLE flush_thread;
+	HANDLE profiler_finished;
 
 public:
 	HostCommunication(){}
@@ -37,12 +38,12 @@ public:
 					const std::wstring& data_buffer_guid, UINT32 data_buffer_size)
 	{
 		ATLTRACE(_T("HostCommunication Initialization entered.\n"));
-		data_flush = CreateEvent(
+		task_finish = CreateEvent(
 			NULL,
 			false,
 			false,
 			(_T("DataFlush#") + data_buffer_guid).c_str());
-		data_flushed = CreateEvent(
+		task_finished = CreateEvent(
 			NULL,
 			false,
 			false,
@@ -52,6 +53,11 @@ public:
 			true,
 			false,
 			NULL);
+		profiler_finished = CreateEvent(
+			NULL,
+			false,
+			false,
+			(_T("ProfilerFinished#") + data_buffer_guid).c_str());
 		flush_thread = CreateThread(NULL, 0, FlusherThread, (PVOID)this,
 			0, NULL);
 
@@ -62,13 +68,18 @@ public:
 	void Finialize()
 	{
 		ATLTRACE(_T("HostCommunication.Finalize"));
-		_data_stream.Flush();
+		//_data_stream.Flush();
 		SetEvent(flush_thread_terminate);
-		WaitForSingleObject(flush_thread, INFINITE);
+		//WaitForSingleObject(flush_thread, INFINITE);
+		SetEvent(profiler_finished);
 	}
 public:
 	bool TrackAssembly(const std::wstring& module_path, const std::wstring& assembly_name)
 	{
+		if (_profiler_task_finished)
+		{
+			return false;
+		}
 		ATLTRACE(_T("HostCommunication.TrackAssembly."));
 		ATLTRACE(_T("Module Path:%s"), module_path.c_str());
 		ATLTRACE(_T("Assembly Name:%s"), assembly_name.c_str());
@@ -102,6 +113,10 @@ public:
 	}
 	bool GetPoints(mdToken functionToken, WCHAR* pModulePath, WCHAR* pAssemblyName, std::vector<SequencePoint> &seqPoints, std::vector<BranchPoint> &brPoints) 
 	{
+		if (_profiler_task_finished)
+		{
+			return false;
+		}
 		ATLTRACE(_T("HostCommunication.GetPoints."));
 		MSG_GetSequencePoints_Request msg;
 		msg.type = MSG_GetSequencePoints;
@@ -125,6 +140,10 @@ public:
 	}
 	bool TrackMethod(mdToken functionToken, std::wstring module_path, ULONG &uniqueId) 
 	{
+		if (_profiler_task_finished)
+		{
+			return false;
+		}
 		ATLTRACE(_T("HostCommunication.TrackMethod."));
 		uniqueId = 0;
 		if (module_path.find(_T("nunit.framework")))
@@ -146,10 +165,15 @@ public:
 	}
 	inline void AddTestEnterPoint(ULONG uniqueId) 
 	{ 
+		if (_profiler_task_finished)
+		{
+			return;
+		}
 		VisitPoint vp;
 		vp.UniqueId = uniqueId | IT_MethodEnter;
 		_data_stream.Write((char*)&vp, 0, sizeof(VisitPoint));
 		ClearHit();
+		in_test = true;
 	}
 	inline void ClearHit()
 	{
@@ -158,30 +182,36 @@ public:
 			hit_account[i] = false;
 		}
 	}
-	inline void FillHit()
-	{
-		for (int i = 0; i < hit_account.size(); i++)
-		{
-			hit_account[i] = true;
-		}
-	}
+	bool in_test = false;
 	inline void AddTestLeavePoint(ULONG uniqueId) 
 	{
+		if (_profiler_task_finished)
+		{
+			return;
+		}
 		VisitPoint vp;
 		vp.UniqueId = uniqueId | IT_MethodLeave;
 		_data_stream.Write((char*)&vp, 0, sizeof(VisitPoint));
-		FillHit();
+		in_test = false;
 	}
 	inline void AddTestTailcallPoint(ULONG uniqueId) 
 	{
+		if (_profiler_task_finished)
+		{
+			return;
+		}
 		VisitPoint vp;
 		vp.UniqueId = uniqueId | IT_MethodTailcall;
 		_data_stream.Write((char*)&vp, 0, sizeof(VisitPoint));
-		FillHit();
+		in_test = false;
 	}
 	inline void AddVisitPointWithThreshold(ULONG uniqueId, ULONG threshold) 
 	{ 
-		if (hit_account[uniqueId])
+		if (_profiler_task_finished)
+		{
+			return;
+		}
+		if (!in_test || hit_account[uniqueId])
 		{
 			return;
 		}
@@ -192,13 +222,24 @@ public:
 	}
 	inline void Resize(ULONG minSize) 
 	{
+		if (_profiler_task_finished)
+		{
+			return;
+		}
 		if (minSize > hit_account.size())
 		{
 			hit_account.resize(minSize);
+			ATLTRACE("HostCommunication : Resized to %ul", minSize);
 		}
 	}
-	void FlushCovData()
+	
+	void TaskFinish()
 	{
+		if (_profiler_task_finished)
+		{
+			return;
+		}
+		_profiler_task_finished = true;
 		_data_stream.Flush();
 	}
 };

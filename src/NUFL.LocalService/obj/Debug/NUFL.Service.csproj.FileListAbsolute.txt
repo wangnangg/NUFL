@@ -1,7 +1,0 @@
-E:\workplace\NUFL\src\NUFL.LocalService\bin\Debug\NUFL.Service.dll
-E:\workplace\NUFL\src\NUFL.LocalService\bin\Debug\NUFL.Service.pdb
-E:\workplace\NUFL\src\NUFL.LocalService\obj\Debug\NUFL.Service.dll
-E:\workplace\NUFL\src\NUFL.LocalService\obj\Debug\NUFL.Service.pdb
-E:\workplace\NUFL\bin\Debug\NUFL.Service.dll
-E:\workplace\NUFL\bin\Debug\NUFL.Service.pdb
-E:\workplace\NUFL\src\NUFL.LocalService\obj\Debug\NUFL.Service.csprojResolveAssemblyReference.cache

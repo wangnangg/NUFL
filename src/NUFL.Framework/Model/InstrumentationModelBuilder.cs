@@ -21,9 +21,9 @@ namespace NUFL.Framework.Model
         /// Standard constructor
         /// </summary>
         /// <param name="symbolManager">the symbol manager that will provide the data</param>
-        public InstrumentationModelBuilder(string module_path, string module_name, IOption option, IFilter filter, IEnumerable<string> pdb_directories)
+        public InstrumentationModelBuilder(string module_path, string module_name, IOption option, IFilter filter, IEnumerable<string> pdb_directories, Program program)
         {
-            _symbolManager = new CecilSymbolManager(option, filter, pdb_directories);
+            _symbolManager = new CecilSymbolManager(option, filter, pdb_directories, program);
             _symbolManager.Initialise(module_path, module_name);
         }
 

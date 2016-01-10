@@ -32,7 +32,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\..\bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -134,8 +134,12 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="NUnitTestAdapter\Converter.cs" />
+    <Compile Include="View\FLResultWrapper.xaml.cs">
+      <DependentUpon>FLResultWrapper.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Helpers\IDEHelper.cs" />
-    <Compile Include="MyToolWindow.cs" />
+    <Compile Include="View\MyToolWindow.cs" />
     <Compile Include="Guids.cs" />
     <Compile Include="NUnitTestAdapter\TestDiscoverer.cs" />
     <Compile Include="NUnitTestAdapter\TestExecutor.cs" />
@@ -148,14 +152,17 @@
     <Compile Include="NUFL.VSPackagePackage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="PkgCmdID.cs" />
-    <Compile Include="Taggers\TextBackground.cs">
+    <Compile Include="Tagger\TextBackground.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Taggers\TextTagger.cs">
+    <Compile Include="Tagger\TextTagger.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Taggers\TextTaggerProvider.cs">
+    <Compile Include="Tagger\TextTaggerProvider.cs">
       <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="View\SettingWindow.xaml.cs">
+      <DependentUpon>SettingWindow.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -170,6 +177,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="main.rtf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
     </None>
@@ -186,11 +197,24 @@
     <None Include="Resources\Images.png" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="License.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
+    <Content Include="Mono.Addins.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <Content Include="NUFL.Profiler.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <Resource Include="Resources\collect_coverage.png" />
     <Content Include="Resources\Package.ico" />
+    <Content Include="screen_shot.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <Content Include="x64\NUFL.Profiler.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
@@ -201,6 +225,16 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\NUFL.Agent.x86\NUFL.Agent.x86.csproj">
+      <Project>{1778FC64-9D87-4F87-8950-2873502F1CA0}</Project>
+      <Name>NUFL.Agent.x86</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
+    </ProjectReference>
+    <ProjectReference Include="..\NUFL.Agent\NUFL.Agent.csproj">
+      <Project>{433DA27A-1B4C-4C45-B368-A37875CF5D50}</Project>
+      <Name>NUFL.Agent</Name>
+      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
+    </ProjectReference>
     <ProjectReference Include="..\NUFL.Framework\NUFL.Framework.csproj">
       <Project>{6b01b019-0d29-415b-b9b2-c1be22826c0b}</Project>
       <Name>NUFL.Framework</Name>
@@ -214,30 +248,21 @@
       <Name>NUFL.Service</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
     </ProjectReference>
-    <ProjectReference Include="..\NUFL.Server\NUFL.Server.csproj">
-      <Project>{8e94badf-619d-4a98-be9e-847afb0a9f74}</Project>
-      <Name>NUFL.Server</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\NUnit.Engine\nunit-agent\nunit-agent-x86.csproj">
-      <Project>{28B605B2-E2E9-417E-8369-49E263F1F31B}</Project>
-      <Name>nunit-agent-x86</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
-    </ProjectReference>
-    <ProjectReference Include="..\NUnit.Engine\nunit-agent\nunit-agent.csproj">
-      <Project>{C2A8FC7A-FA64-46EA-AF6D-73D6B371DBF8}</Project>
-      <Name>nunit-agent</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
-    </ProjectReference>
-    <ProjectReference Include="..\NUnit.Engine\nunit.engine.api\nunit.engine.api.csproj">
-      <Project>{775fad50-3623-4922-97c4-dfb29a8be4c7}</Project>
-      <Name>nunit.engine.api</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\NUnit.Engine\nunit.engine\nunit.engine.csproj">
-      <Project>{372a3447-d657-40ff-a089-77c19fec30c8}</Project>
-      <Name>nunit.engine</Name>
-    </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Page Include="View\FLResultWrapper.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\SettingWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Style.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
   <PropertyGroup>
     <UseCodebase>true</UseCodebase>
   </PropertyGroup>
